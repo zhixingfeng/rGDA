@@ -13,9 +13,3 @@ calCondFreq <- function(m5.data, encode.data, cand.y, cand.x)
 }
 
 
-findReadsByLoci <- function(encode.data, loci)
-{
-	which(sapply(encode.data, function(x, t) all(!is.na(match(t,x)) ), t = loci))
-}
-
-
