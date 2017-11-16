@@ -1,10 +1,83 @@
-encode.data <- load.encodefile('./ERR752452_ERR690970_ERR1223274_ERR910547_ERR1588642.encode.rdim.5000')
-m5.data <- load.m5file('./ERR752452_ERR690970_ERR1223274_ERR910547_ERR1588642.clean.m5.5000')
-k <- 200
-centroid.range <- c(m5.data$tStart[k], m5.data$tEnd[k])
-centroid <- encode.data[[k]]
-rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, centroid)
-rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, 10, 1000)
+#encode.data <- load.encodefile('./ERR752452_ERR690970_ERR1223274_ERR910547_ERR1588642.encode.rdim.5000')
+#m5.data <- load.m5file('./ERR752452_ERR690970_ERR1223274_ERR910547_ERR1588642.clean.m5.5000')
+#k <- 200
+#centroid.range <- c(m5.data$tStart[k], m5.data$tEnd[k])
+#centroid <- encode.data[[k]]
+#rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, centroid)
+#rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, 10, 1000)
+
+trim_centroid <- function(encode.data, centroid, min.cvg = 10)
+{
+	centroid.trim <- centroid
+	for (i in 1:length(centroid)){
+		print(i)
+		if (length(centroid[[i]])==0)
+			stop('length(centroid[[i]])==0')
+		
+		for (j in length(centroid[[i]]):1){
+			n.var <- length(findReadsByLoci(encode.data, c(centroid[[i]][1],centroid[[i]][j])))				
+			if (n.var >= min.cvg){
+				centroid.trim[[i]] <- centroid[[i]][1:j]
+				break
+			}	
+		}		
+	}
+	centroid.trim 
+}
+
+merge_centroid <- function(encode.data, m5.data, centroid, centroid.range.code, idx.on, min.rat=5)
+{
+	is.rm <- length(centroid)
+	centroid.sim <- matrix(0, length(centroid), length(centroid))
+
+	for (i in 1:length(centroid)){
+		for (j in 1:length(centroid)){
+			if (j == i)
+				next
+			if (min(centroid[[i]]) < min(centroid[[j]]) || max(centroid[[i]]) > max(centroid[[j]]) )
+				next
+		
+			# only consider overlap region between centroids i an j
+			#overlap.code.min <- max(centroid.range.code[[i]][1], centroid.range.code[[j]][1])
+			#overlap.code.max <- min(centroid.range.code[[i]][2], centroid.range.code[[j]][2])
+			
+			overlap.code.min <- min(centroid[[i]])
+			overlap.code.max <- max(centroid[[i]])
+			if (overlap.code.min > overlap.code.max)
+				next		
+			
+			centroid.i <- centroid[[i]][ centroid[[i]]>=overlap.code.min & centroid[[i]]<=overlap.code.max ]	
+			centroid.j <- centroid[[j]][ centroid[[j]]>=overlap.code.min & centroid[[j]]<=overlap.code.max ]				
+			idx.union <- sort(union(idx.on[[i]], idx.on[[j]])) 
+			tStart.code <- 4*m5.data$tStart[idx.union]
+			tEnd.code <- 4*m5.data$tEnd[idx.union] + 3
+
+			# test different variant in centroid[i]
+			diff.var.i <- setdiff(centroid.i, centroid.j)
+			n.var.i <- numeric(length(diff.var.i))
+			n.reads.i <- numeric(length(diff.var.i))
+			if (length(n.var.i)>0){
+				for (k in 1:length(n.var.i)){
+					n.var.i[k] <- length(findReadsByLoci(encode.data[idx.union], diff.var.i[k]))
+					n.reads.i[k] <- sum(tStart.code<=min(diff.var.i[k]) & tEnd.code>=max(diff.var.i[k]))
+				}
+			}
+	
+			# test different variant in centroid[j]
+			diff.var.j <- setdiff(centroid.j, centroid.i)
+			n.var.j <- numeric(length(diff.var.j))
+                        n.reads.j <- numeric(length(diff.var.j))
+			if (length(n.var.j)>0){
+                        	for (k in 1:length(n.var.j)){
+                                	n.var.j[k] <- length(findReadsByLoci(encode.data[idx.union], diff.var.j[k]))
+                                	n.reads.j[k] <- sum(tStart.code<=min(diff.var.j[k]) & tEnd.code>=max(diff.var.j[k]))
+                        	}
+			}
+			
+		}
+	}		
+}
+
 
 mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.idx.on = 10, max.iter=1)
 {
