@@ -10,3 +10,15 @@ encode.snp <- function(x)
 	x.code
 }
 
+decode.snv <- function(x)
+{
+	locus <- floor(x/4)
+	shift <- x%%4
+	base <- character(length(x))	
+	base[shift==0] <- 'A'
+	base[shift==1] <- 'C'
+	base[shift==2] <- 'G'
+	base[shift==3] <- 'T'
+	list(base=base, locus=locus)
+}
+
