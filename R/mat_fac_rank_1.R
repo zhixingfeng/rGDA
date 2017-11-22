@@ -159,6 +159,7 @@ mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.ite
 		if (i == length(idx.off.all))
 			break
 	}
+	mat.fac.rl	
 }
 
 mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
