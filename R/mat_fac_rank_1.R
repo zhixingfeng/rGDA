@@ -5,6 +5,9 @@
 #centroid <- encode.data[[k]]
 #rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, centroid)
 #rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, 10, 1000)
+#rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, 
+		min.cvg = 10, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
+
 
 trim_centroid <- function(encode.data, centroid, min.cvg = 10)
 {
@@ -105,6 +108,28 @@ mat_fac_old <- function(encode.data, m5.data, min.cvg = 100,  min.idx.on = 10, m
 		centroid.range <- c(floor(var.set[i]/4), floor(var.set[j]/4))
 	}
 }
+
+mat_fac_rm_redudant <- function(centroid)
+{
+	is.redundant <- rep(FALSE, length(centroid))
+	for (i in 1:length(centroid)){
+        	for (j in 1:length(centroid)){
+                	if (j==i)
+                        	next
+                	overlap.start <- min(centroid[[i]])
+                	overlap.end <- max(centroid[[i]])
+
+                	centroid.i <- centroid[[i]]
+                	centroid.j <- centroid[[j]][centroid[[j]]>=overlap.start & centroid[[j]]<=overlap.end]
+                	if (identical(centroid.i, centroid.j) & length(centroid[[i]]) < length(centroid[[j]]) ){
+                        	is.redundant[i] <- TRUE
+                        	break
+                	}
+        	}
+	}
+	centroid[!is.redundant]
+}
+
 
 mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
 {	
