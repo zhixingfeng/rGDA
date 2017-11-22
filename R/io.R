@@ -27,3 +27,20 @@ load.output <- function(outputfile)
 	x
 }
 
+load.dist <- function(dist.file, min.overlap = 100){
+	dist.raw <- read.table(dist.file, sep=',', header=FALSE, as.is=TRUE)
+	n.reads <- max(dist.raw[,1] + 1, dist.raw[,2] + 1)	
+	dist.mat <- matrix(1, nrow=n.reads, ncol=n.reads)
+	for (i in 1:nrow(dist.raw)){
+		if (i %% 10000 == 0)
+        	        cat(i, '\n')
+	        idx.row <- dist.raw[i,1] + 1
+        	idx.col <- dist.raw[i,2] + 1
+		if (dist.raw[i,5] >= min.overlap)
+			dist.mat[idx.row, idx.col] <- dist.raw[i,3]
+	}
+	diag(dist.mat) <- 0
+	dist.mat
+}
+
+
