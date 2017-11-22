@@ -106,7 +106,7 @@ mat_fac_old <- function(encode.data, m5.data, min.cvg = 100,  min.idx.on = 10, m
 	}
 }
 
-mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
+mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.iter=100)
 {	
 	# check if encode.data matches m5.data
 	if (length(encode.data) != nrow(m5.data))
@@ -129,13 +129,9 @@ mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.ite
 		for (i in 1:length(idx.off.all)){
 			cur.centroid <- encode.data.sort[[ idx.off.all[i] ]]
 			cur.centroid.range <- c(m5.data.sort$tStart[ idx.off.all[i] ], m5.data.sort$tEnd[ idx.off.all[i] ])
-			if (length(cur.centroid) == 0)
-				next
-			
 				
 			# rank 1 decomposition 
-			cur.rl <- mat_fac_rank_1(encode.data.sort, m5.data.sort, cur.centroid.range, cur.centroid, min.idx.on, 
-						max.iter, is.full.comp)
+			cur.rl <- mat_fac_rank_1(encode.data.sort, m5.data.sort, cur.centroid.range, cur.centroid, min.idx.on, max.iter)
 			
 			# if size of idx.on of current decomposition is larger than min.idx.on 
 			# trim centroid, refacterize and update idx.on.all and idx.off.all
@@ -161,12 +157,12 @@ mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.ite
 	}
 }
 
-mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
+mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.idx.on = 10, max.iter=100)
 {
 	old.centroid <- centroid
 	n.iter <- 0
 	for (i in 1:max.iter){
-		rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, old.centroid, is.full.comp)
+		rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, old.centroid)
 		n.iter <- n.iter + 1
 		if (length(rl$idx.on) < min.idx.on)
 			break;
@@ -183,7 +179,7 @@ mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.i
 	rl
 }
 
-mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, is.full.comp = TRUE)
+mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid)
 {
 	###--------- match reads to the centroid --------###
 	if (length(encode.data)!=nrow(m5.data)){
@@ -191,19 +187,9 @@ mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, 
 	}
 	is.on <- rep(FALSE, length(encode.data))
 	for (i in 1:length(encode.data)){
-		if (is.full.comp){
-			common.var <- intersect(encode.data[[i]], centroid)
-			if (length(common.var) >= ceiling(length(centroid)/2 ))
-				is.on[i] <- TRUE
-		}else{
-			common.var <- intersect(encode.data[[i]], centroid)
-			n.centroid.overlap <- sum(centroid>=4*m5.data$tStart[i] & centroid<=4*m5.data$tEnd[i]+3)
-			if (length(common.var)>n.centroid.overlap)
-				stop('length(common.var)>n.centroid.overlap')
-			if (length(common.var) >= ceiling(n.centroid.overlap/2 ) & 
-				n.centroid.overlap > 0)
-                                is.on[i] <- TRUE
-		}
+		common.var <- intersect(encode.data[[i]], centroid)
+		if (length(common.var) >= ceiling(length(centroid)/2 ))
+			is.on[i] <- TRUE
 	}
 	idx.on <- which(is.on)
 	idx.off <- which(!is.on)
