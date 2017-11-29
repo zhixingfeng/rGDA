@@ -5,8 +5,8 @@
 #centroid <- encode.data[[k]]
 #rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, centroid)
 #rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, 10, 1000)
-#rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, 
-		min.cvg = 10, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
+#rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
+#rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, min.idx.on = 10, max.iter=100, is.full.comp = FALSE)
 
 
 trim_centroid <- function(encode.data, centroid, min.cvg = 10)
@@ -130,8 +130,84 @@ mat_fac_rm_redudant <- function(centroid)
 	centroid[!is.redundant]
 }
 
+cal.dist <- function(encode.1, range.1, encode.2, range.2)
+{
+	range.overlap <- c(max(range.1[1], range.2[1]), min(range.1[2], range.2[2]))
+	if (range.overlap[1] > range.overlap[2])
+		return(NaN)
+	encode.1.overlap <- encode.1[encode.1>=4*range.overlap[1] & encode.1<=4*range.overlap[2]+3]
+	encode.2.overlap <- encode.2[encode.2>=4*range.overlap[1] & encode.2<=4*range.overlap[2]+3]		
+	
+	encode.dist <- length(setdiff(encode.1.overlap, encode.2.overlap)) + length(setdiff(encode.2.overlap, encode.1.overlap))
+	encode.dist <- encode.dist / (range.overlap[2] - range.overlap[1])	
+	encode.dist	
+}
 
 mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
+{
+	# check if encode.data matches m5.data
+        if (length(encode.data) != nrow(m5.data))
+                stop('length(encode.data) != nrow(m5.data)')
+	
+	# set origin to be the first centroid and select the read that have largest minial distance to all existing centroid
+	# to be the next centroid
+	centroid.list <- list(integer(0))
+	centroid.range.list <- list(c(min(m5.data$tStart), max(m5.data$tEnd)))
+	idx.on.all <- integer(0)
+        idx.off.all <- 1:length(encode.data)
+        mat.fac.rl <- list()
+        k <- 1
+	while(TRUE){
+		read.dist <- rep(1, length(idx.off.all))
+		# scan each read
+		for (i in 1:length(idx.off.all)){
+			cur.encode <- encode.data[[ idx.off.all[i] ]]
+			cur.range <- c(m5.data$tStart[idx.off.all[i]], m5.data$tEnd[idx.off.all[i]])
+			# find mimial distance to the existing centroids
+			for (j in 1:length(centroid.list)){
+				cur.dist <- cal.dist(cur.encode, cur.range, centroid.list[[j]], centroid.range.list[[j]])	
+				if (cur.dist < read.dist[i])
+					read.dist[i] <- cur.dist
+			}
+		}
+		idx.max <- idx.off.all[which.max(read.dist)]
+		
+		# rank 1 matrix facterization 
+		cur.centroid <- encode.data[[idx.max]]
+		cur.centroid.range <- c(m5.data$tStart[idx.max], m5.data$tEnd[idx.max])
+	
+		if (length(cur.centroid)==0){
+			idx.on.all <- union(idx.on.all, idx.max)
+		}else{
+			cur.rl <- mat_fac_rank_1(encode.data, m5.data, cur.centroid.range, cur.centroid, min.idx.on,
+                                                max.iter, is.full.comp)	
+			
+			# if size of idx.on of current decomposition is larger than min.idx.on
+                	# trim centroid, refacterize and update idx.on.all and idx.off.all
+                	if (length(cur.rl$idx.on) >= min.idx.on){
+                		cur.centroid.trim <- trim_centroid(encode.data, list(cur.rl$new.centroid), min.cvg)[[1]]
+                        	cur.centroid.trim.range <- c(floor(min(cur.centroid.trim)/4), floor(max(cur.centroid.trim)/4))
+                        	cur.rl <- mat_fac_rank_1(encode.data, m5.data, cur.centroid.trim.range, cur.centroid.trim,
+                                			min.idx.on, max.iter, is.full.comp)
+                        	if (all(cur.rl$idx.on %in% idx.on.all)){
+                        		idx.on.all <- union(idx.on.all, idx.max)
+					#next
+				}
+
+                        	mat.fac.rl[[k]] <- cur.rl
+                        	k <- k + 1
+               		}
+		}
+		idx.on.all <- union(idx.on.all, cur.rl$idx.on)
+                idx.off.all <- setdiff(1:length(encode.data), idx.on.all)
+		cat("idx.off.all size:", length(idx.off.all), '\n')
+		if (length(idx.off.all)==0)
+			break		
+	}
+	mat.fac.rl		
+}
+
+mat_fac_long_reads_first <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
 {	
 	# check if encode.data matches m5.data
 	if (length(encode.data) != nrow(m5.data))
