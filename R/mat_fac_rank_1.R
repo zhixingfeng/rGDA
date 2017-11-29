@@ -149,7 +149,7 @@ cal.dist <- function(encode.1, range.1, encode.2, range.2)
 	encode.dist	
 }
 
-mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
+mat_fac <- function(encode.data, m5.data, min.cvg = 20, min.idx.on = 10, max.iter=100, is.full.comp = FALSE, is.overhang=TRUE)
 {
 	# check if encode.data matches m5.data
         if (length(encode.data) != nrow(m5.data))
@@ -185,16 +185,16 @@ mat_fac <- function(encode.data, m5.data, min.cvg = 10, min.idx.on = 10, max.ite
 		if (length(cur.centroid)==0){
 			idx.on.all <- union(idx.on.all, idx.max)
 		}else{
-			cur.rl <- mat_fac_rank_1(encode.data, m5.data, cur.centroid.range, cur.centroid, min.idx.on,
-                                                max.iter, is.full.comp)	
+			cur.rl <- mat_fac_rank_1(encode.data, m5.data, cur.centroid.range, cur.centroid, min.cvg, min.idx.on,
+                                                max.iter, is.full.comp, is.overhang)	
 			
 			# if size of idx.on of current decomposition is larger than min.idx.on
                 	# trim centroid, refacterize and update idx.on.all and idx.off.all
                 	if (length(cur.rl$idx.on) >= min.idx.on){
-                		cur.centroid.trim <- trim_centroid(encode.data, list(cur.rl$new.centroid), min.cvg)[[1]]
-                        	cur.centroid.trim.range <- c(floor(min(cur.centroid.trim)/4), floor(max(cur.centroid.trim)/4))
-                        	cur.rl <- mat_fac_rank_1(encode.data, m5.data, cur.centroid.trim.range, cur.centroid.trim,
-                                			min.idx.on, max.iter, is.full.comp)
+                		#cur.centroid.trim <- trim_centroid(encode.data, list(cur.rl$new.centroid), min.cvg)[[1]]
+                        	#cur.centroid.trim.range <- c(floor(min(cur.centroid.trim)/4), floor(max(cur.centroid.trim)/4))
+                        	#cur.rl <- mat_fac_rank_1(encode.data, m5.data, cur.centroid.trim.range, cur.centroid.trim,
+                                #			min.idx.on, max.iter, is.full.comp)
                         	if (all(cur.rl$idx.on %in% idx.on.all)){
                         		idx.on.all <- union(idx.on.all, idx.max)
 					#next
@@ -270,7 +270,7 @@ mat_fac_long_reads_first <- function(encode.data, m5.data, min.cvg = 10, min.idx
 }
 
 mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.cvg =20,min.idx.on = 10, max.iter=100,
-			 is.full.comp = TRUE, is.overhang=TRUE)
+			 is.full.comp = FALSE, is.overhang=TRUE)
 {
 	old.centroid <- centroid
 	n.iter <- 0
@@ -294,7 +294,7 @@ mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.c
 	rl
 }
 
-mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, min.cvg = 20, is.full.comp = TRUE, is.overhang = TRUE)
+mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, min.cvg = 20, is.full.comp = FALSE, is.overhang = TRUE)
 {
 	###--------- match reads to the centroid --------###
 	if (length(encode.data)!=nrow(m5.data)){
