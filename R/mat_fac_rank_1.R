@@ -9,6 +9,12 @@
 #rl <- mat_fac_rank_1(encode.data, m5.data, centroid.range, centroid, min.idx.on = 10, max.iter=100, is.full.comp = FALSE)
 
 
+assemble_centroid <- function(centroid)
+{
+	centroid.start <- sapply(centroid, min)	
+	centroid.sort <- centroid[order(centroid.start)]
+	
+}
 trim_centroid <- function(encode.data, centroid, min.cvg = 10)
 {
 	centroid.trim <- centroid
@@ -121,7 +127,7 @@ mat_fac_rm_redudant <- function(centroid)
 
                 	centroid.i <- centroid[[i]]
                 	centroid.j <- centroid[[j]][centroid[[j]]>=overlap.start & centroid[[j]]<=overlap.end]
-                	if (identical(centroid.i, centroid.j) & length(centroid[[i]]) < length(centroid[[j]]) ){
+                	if (identical(centroid.i, centroid.j) & length(centroid[[i]]) <= length(centroid[[j]]) ){
                         	is.redundant[i] <- TRUE
                         	break
                 	}
@@ -263,12 +269,14 @@ mat_fac_long_reads_first <- function(encode.data, m5.data, min.cvg = 10, min.idx
 	mat.fac.rl	
 }
 
-mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.idx.on = 10, max.iter=100, is.full.comp = TRUE)
+mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.cvg =20,min.idx.on = 10, max.iter=100,
+			 is.full.comp = TRUE, is.overhang=TRUE)
 {
 	old.centroid <- centroid
 	n.iter <- 0
 	for (i in 1:max.iter){
-		rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, old.centroid, is.full.comp)
+		print(i)
+		rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, old.centroid, min.cvg, is.full.comp, is.overhang)
 		n.iter <- n.iter + 1
 		if (length(rl$idx.on) < min.idx.on)
 			break;
@@ -279,13 +287,14 @@ mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.i
                 old.centroid <- rl$new.centroid
                 old.idx.on <- rl$idx.on
 		old.idx.off <- rl$idx.off
+		centroid.range <- rl$new.centroid.range
 
 	}
 	rl$n.iter <- n.iter
 	rl
 }
 
-mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, is.full.comp = TRUE)
+mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, min.cvg = 20, is.full.comp = TRUE, is.overhang = TRUE)
 {
 	###--------- match reads to the centroid --------###
 	if (length(encode.data)!=nrow(m5.data)){
@@ -311,11 +320,17 @@ mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, 
 	idx.off <- which(!is.on)
 	
 	###--------- update centroid -------###
-	# use the stupid binary matrix to represent reads
+	# use the binary matrix to represent reads
 	centroid.range.code <- centroid.range
-	centroid.range.code[1] <- 4*centroid.range[1]	
+	
+	if (is.overhang){
+		centroid.range[1] <- min(m5.data$tStart[idx.on])
+		centroid.range[2] <- max(m5.data$tEnd[idx.on])		
+	}
+	centroid.range.code[1] <- 4*centroid.range[1]
 	centroid.range.code[2] <- 4*centroid.range[2] + 3
 	
+
 	mat.size <- centroid.range.code[2] - centroid.range.code[1] + 1
 	
 	encode.data.mat.var <- matrix(0, nrow=length(idx.on), ncol=mat.size)
@@ -349,7 +364,13 @@ mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, 
 		stop('encode.data.mat.var.count > encode.data.mat.reads.count')
 	new.centroid <- centroid.range.code[1] + which(encode.data.mat.var.count>=ceiling(encode.data.mat.reads.count/2)
 				& encode.data.mat.reads.count>=1) - 1
-	list(idx.on=idx.on, idx.off=idx.off, new.centroid=new.centroid)
+	
+	# trim new.centroid 
+	cvg.profile <- apply(encode.data.mat.reads, 2, sum)
+	idx.true <- which(cvg.profile >= min.cvg)
+	new.centroid.range <- floor((range(idx.true) + centroid.range.code[1] - 1) / 4)
+	new.centroid <- new.centroid[new.centroid>=4*new.centroid.range[1] & new.centroid<=4*new.centroid.range[2]+3]
+	list(idx.on=idx.on, idx.off=idx.off, new.centroid=new.centroid, new.centroid.range=new.centroid.range)
 }
 
 
