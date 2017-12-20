@@ -149,7 +149,38 @@ cal.dist <- function(encode.1, range.1, encode.2, range.2)
 	encode.dist	
 }
 
-mat_fac <- function(encode.data, m5.data, min.cvg = 20, min.idx.on = 10, max.iter=100, is.full.comp = FALSE, is.overhang=TRUE)
+# use uncontained reads as seed centroids
+mat_fac <- function(encode.data, m5.data, centroid.seed, centroid.seed.range, min.cvg = 20, min.idx.on = 10, max.iter=100, is.full.comp = FALSE, is.overhang=TRUE)
+{
+	# check if encode.data matches m5.data
+        if (length(encode.data) != nrow(m5.data))
+                stop('length(encode.data) != nrow(m5.data)')
+	# check if centroid.seed and centroid.seed.range compatible
+	if (length(centroid.seed) != length(centroid.seed.range))
+		stop('length(centroid.seed) != length(centroid.seed.range)')
+
+	# conduct rank 1 decomposition for each centroid.seed
+	mat.fac.rl <- list()
+	for (i in 1:length(centroid.seed)){
+		cat('centroid.seed', i, '\n')
+		# rank 1 matrix facterization 
+		if (length(centroid.seed[[i]])==0)
+			next
+
+		cur.rl <- mat_fac_rank_1(encode.data, m5.data, centroid.seed.range[[i]], centroid.seed[[i]], min.cvg, min.idx.on,
+                                                max.iter, is.full.comp, is.overhang)
+		if (is.null(cur.rl))
+			next
+		if (length(cur.rl$idx.on) >= min.idx.on){
+			mat.fac.rl[[i]] <- cur.rl 
+		}
+
+	}
+
+	mat.fac.rl			
+}
+# use the read with largest minial distance to the existing centroids as the new seed centroid
+mat_fac_mindist <- function(encode.data, m5.data, min.cvg = 20, min.idx.on = 10, max.iter=100, is.full.comp = FALSE, is.overhang=TRUE)
 {
 	# check if encode.data matches m5.data
         if (length(encode.data) != nrow(m5.data))
@@ -275,8 +306,11 @@ mat_fac_rank_1 <- function(encode.data, m5.data, centroid.range, centroid, min.c
 	old.centroid <- centroid
 	n.iter <- 0
 	for (i in 1:max.iter){
-		print(i)
+		#print(i)
 		rl <- mat_fac_rank_1_core(encode.data, m5.data, centroid.range, old.centroid, min.cvg, is.full.comp, is.overhang)
+		if (is.null(rl)){
+			return(NULL)
+		}
 		n.iter <- n.iter + 1
 		if (length(rl$idx.on) < min.idx.on)
 			break;
@@ -368,6 +402,9 @@ mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, 
 	# trim new.centroid 
 	cvg.profile <- apply(encode.data.mat.reads, 2, sum)
 	idx.true <- which(cvg.profile >= min.cvg)
+	if (length(idx.true)==0){
+		return(NULL)
+	}
 	new.centroid.range <- floor((range(idx.true) + centroid.range.code[1] - 1) / 4)
 	new.centroid <- new.centroid[new.centroid>=4*new.centroid.range[1] & new.centroid<=4*new.centroid.range[2]+3]
 	list(idx.on=idx.on, idx.off=idx.off, new.centroid=new.centroid, new.centroid.range=new.centroid.range)
