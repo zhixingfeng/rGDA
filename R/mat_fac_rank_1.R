@@ -345,7 +345,7 @@ mat_fac_rank_1_core <- function(encode.data, m5.data, centroid.range, centroid, 
 			n.centroid.overlap <- sum(centroid>=4*m5.data$tStart[i] & centroid<=4*m5.data$tEnd[i]+3)
 			if (length(common.var)>n.centroid.overlap)
 				stop('length(common.var)>n.centroid.overlap')
-			if (length(common.var) >= ceiling(n.centroid.overlap/2 ) & 
+			if (length(common.var) > ceiling(n.centroid.overlap/2 ) & 
 				n.centroid.overlap > 0)
                                 is.on[i] <- TRUE
 		}
