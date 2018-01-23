@@ -50,7 +50,7 @@ assemble.trim.centroid.core <- function(m5.data.sub, centroid, centroid.range, m
 	list(centroid.trim = centroid.trim, centroid.range.trim = centroid.range.trim)
 }
 
-assemble <- function(encode.data, m5.data, centroid, centroid.range, min.cvg = 20, min.overlap = 200, 
+assemble <- function(encode.data, m5.data, centroid, centroid.range, min.idx.on = 20, min.cvg = 20, min.overlap = 200, 
 		max.iter = 50, is.trim=TRUE)
 {
 	#------------- check input data ------------#
@@ -72,7 +72,7 @@ assemble <- function(encode.data, m5.data, centroid, centroid.range, min.cvg = 2
 		rl.core <- assemble.core(encode.data.sub, m5.data.sub,
                                         centroid.update, centroid.range.update,
                                         min.overlap = min.overlap)
-		if (length(rl.core$centroid)==0 | identical(rl.core$centroid, centroid.update))	
+		if (length(rl.core$centroid)==0 | identical(rl.core$centroid, centroid.update) | length(rl.core$idx.on) < min.idx.on)	
 			break
 		centroid.update <- rl.core$centroid
 		centroid.range.update <- rl.core$centroid.range
@@ -176,11 +176,81 @@ assemble.core <- function(encode.data, m5.data, centroid, centroid.range, min.ov
         }
 
         # majority voting
-        new.centroid <- which(2*cur.var.count>=cur.read.count & cur.read.count>0) - 1
+        new.centroid <- which(cur.var.count>=ceiling(cur.read.count/2) & cur.read.count>0) - 1
 	
 	# restrict new.centroid to centroid.range
 	new.centroid <- new.centroid[new.centroid >= 4*centroid.range[1] & new.centroid <= 4*centroid.range[2]+3]
 
 	list(centroid = new.centroid, centroid.range = centroid.range,idx.on = idx.on)
 }
+
+
+link.scafold <- function(rl.cluster)
+{
+	haplotypes <- list()
+	haplotypes.range <- list()
+	for (i in 1:length(rl.cluster)){
+		print(i)
+		if (length(haplotypes)==0){
+			haplotypes[[1]] <- rl.cluster[[i]]$centroid
+			haplotypes.range[[1]] <- rl.cluster[[i]]$centroid.range
+			next
+		}
+		
+		new.haplotypes <- list()
+		new.haplotypes.range <- list()
+		for (j in 1:length(haplotypes)){
+			overlap.start <- max(haplotypes.range[[j]][1], rl.cluster[[i]]$centroid.range[1])
+			overlap.end <- min(haplotypes.range[[j]][2], rl.cluster[[i]]$centroid.range[2])
+			if (overlap.start >= overlap.end){
+				new.haplotypes[[length(new.haplotypes) + 1]] <- rl.cluster[[i]]$centroid
+				new.haplotypes.range[[length(new.haplotypes.range) + 1]] <- rl.cluster[[i]]$centroid.range
+			}else{
+				cur.haplotype.overlap <- haplotypes[[j]][haplotypes[[j]] >= 4*overlap.start & 
+									haplotypes[[j]] <= 4*overlap.end+3]
+				cur.centroid.overlap <- rl.cluster[[i]]$centroid[
+						rl.cluster[[i]]$centroid >= 4*overlap.start & 
+						rl.cluster[[i]]$centroid <= 4*overlap.end+3]
+				if(identical(cur.haplotype.overlap, cur.centroid.overlap)){
+					haplotypes[[j]] <- sort(unique(c(haplotypes[[j]], rl.cluster[[i]]$centroid)))
+					haplotypes.range[[j]][1] <- min(haplotypes.range[[j]][1], 
+									rl.cluster[[i]]$centroid.range[1])
+					haplotypes.range[[j]][2] <- max(haplotypes.range[[j]][2],
+									rl.cluster[[i]]$centroid.range[2])
+				}else{
+					new.haplotypes[[length(new.haplotypes) + 1]] <- rl.cluster[[i]]$centroid
+					new.haplotypes.range[[length(new.haplotypes.range) + 1]] <- 
+										rl.cluster[[i]]$centroid.range
+				}
+			}
+		}
+		haplotypes <- c(haplotypes, new.haplotypes)
+		haplotypes.range <- c(haplotypes.range, new.haplotypes.range)
+	}
+	list(haplotypes=haplotypes, haplotypes.range=haplotypes.range)
+}
+
+
+link.scafold.bak <- function(rl.cluster)
+{
+	node.all <- lapply(rl.cluster, function(x) x$centroid)
+	node.all <- sort(unique(unlist(node.all)))
+	adj.mat <- matrix(0, length(node.all), length(node.all))
+	rownames(adj.mat) <- node.all
+	colnames(adj.mat) <- node.all
+	for (i in 1:length(rl.cluster)){
+		print(i)
+		for (j in 1:length(rl.cluster[[i]]$trim)){
+			idx <- match(rl.cluster[[i]]$trim[[j]]$centroid.trim, node.all)
+			if (length(idx) < 2)
+				next
+				#stop('length(idx) < 2')
+			for (k in 1:(length(idx)-1)){
+				adj.mat[idx[k], idx[k+1]] <- 1
+			}
+		}
+	}
+	adj.mat	
+}
+
 

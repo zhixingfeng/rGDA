@@ -46,8 +46,8 @@ olc <- function(encode.data, m5.data, min.overlap.var = 1, min.overlap = 200)
 			if (m5.data$tStart[i] < m5.data$tStart[j] | m5.data$tEnd[i] > m5.data$tEnd[j])
 				next
 			n.common.var <- length(intersect(encode.data[[i]], encode.data[[j]]))
-			n.var.overlap <- sum(encode.data[[i]]>=4*m5.data$tStart[j] & encode.data[[i]]<=4*m5.data$tEnd[j]+3)
-			
+			#n.var.overlap <- sum(encode.data[[i]]>=4*m5.data$tStart[j] & encode.data[[i]]<=4*m5.data$tEnd[j]+3)
+			n.var.overlap <- sum(encode.data[[j]]>=4*m5.data$tStart[i] & encode.data[[j]]<=4*m5.data$tEnd[i]+3)
 			if (n.var.overlap > 0 & n.common.var >= ceiling(n.var.overlap/2))			
 				contain.mat[i,j] <- 1
 		}
