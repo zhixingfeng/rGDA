@@ -197,35 +197,28 @@ link.scafold <- function(rl.cluster)
 			next
 		}
 		
-		new.haplotypes <- list()
-		new.haplotypes.range <- list()
+		is.new <- TRUE
 		for (j in 1:length(haplotypes)){
 			overlap.start <- max(haplotypes.range[[j]][1], rl.cluster[[i]]$centroid.range[1])
 			overlap.end <- min(haplotypes.range[[j]][2], rl.cluster[[i]]$centroid.range[2])
-			if (overlap.start >= overlap.end){
-				new.haplotypes[[length(new.haplotypes) + 1]] <- rl.cluster[[i]]$centroid
-				new.haplotypes.range[[length(new.haplotypes.range) + 1]] <- rl.cluster[[i]]$centroid.range
-			}else{
-				cur.haplotype.overlap <- haplotypes[[j]][haplotypes[[j]] >= 4*overlap.start & 
-									haplotypes[[j]] <= 4*overlap.end+3]
-				cur.centroid.overlap <- rl.cluster[[i]]$centroid[
-						rl.cluster[[i]]$centroid >= 4*overlap.start & 
-						rl.cluster[[i]]$centroid <= 4*overlap.end+3]
-				if(identical(cur.haplotype.overlap, cur.centroid.overlap)){
+			if (overlap.start < overlap.end ){
+				cur.haplotype <- haplotypes[[j]][haplotypes[[j]] >= 4*overlap.start & 
+								haplotypes[[j]] <= 4*overlap.end+3]
+				cur.centroid <- rl.cluster[[i]]$centroid[rl.cluster[[i]]$centroid >= 4*overlap.start &
+								rl.cluster[[i]]$centroid <= 4*overlap.end+3]
+				if (identical(cur.haplotype, cur.centroid)){
 					haplotypes[[j]] <- sort(unique(c(haplotypes[[j]], rl.cluster[[i]]$centroid)))
-					haplotypes.range[[j]][1] <- min(haplotypes.range[[j]][1], 
-									rl.cluster[[i]]$centroid.range[1])
-					haplotypes.range[[j]][2] <- max(haplotypes.range[[j]][2],
-									rl.cluster[[i]]$centroid.range[2])
-				}else{
-					new.haplotypes[[length(new.haplotypes) + 1]] <- rl.cluster[[i]]$centroid
-					new.haplotypes.range[[length(new.haplotypes.range) + 1]] <- 
-										rl.cluster[[i]]$centroid.range
+					haplotypes.range[[j]][1] <- min(haplotypes.range[[j]][1], rl.cluster[[i]]$centroid.range[1])
+					haplotypes.range[[j]][2] <- max(haplotypes.range[[j]][2], rl.cluster[[i]]$centroid.range[2])
+					is.new <- FALSE
 				}
 			}
+
 		}
-		haplotypes <- c(haplotypes, new.haplotypes)
-		haplotypes.range <- c(haplotypes.range, new.haplotypes.range)
+		if (is.new){
+			haplotypes <- c(haplotypes, list(rl.cluster[[i]]$centroid))
+			haplotypes.range <- c(haplotypes.range, list(rl.cluster[[i]]$centroid.range))
+		}
 	}
 	list(haplotypes=haplotypes, haplotypes.range=haplotypes.range)
 }
