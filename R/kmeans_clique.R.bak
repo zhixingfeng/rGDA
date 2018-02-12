@@ -60,7 +60,7 @@ kmeans_reads <- function(encode.data, m5.data, centroid.seed, centroid.seed.rang
 						
 }
 
-kmeans_reads_core <- function(encode.data, m5.data, centroid.seed, centroid.seed.range, min.cvg=8, min.overlap=200, is.full.comp = FALSE)
+kmeans_reads_core <- function(encode.data, m5.data, centroid.seed, centroid.seed.range, min.cvg=20, min.overlap=200, is.full.comp = FALSE)
 {
 	###--------- match reads to the centroid --------###
         if (length(encode.data)!=nrow(m5.data)){
@@ -143,23 +143,19 @@ kmeans_reads_core <- function(encode.data, m5.data, centroid.seed, centroid.seed
 	
 			
 		# majority voting
-		new.centroid[[i]] <- which(2*cur.var.count > cur.read.count) - 1
+		new.centroid[[i]] <- which(2*cur.var.count>=cur.read.count) - 1
 
 		# trim low coverage ends
 		low.cvg <- which(cur.read.count < min.cvg) - 1
 		new.centroid[[i]] <- setdiff(new.centroid[[i]], low.cvg)
 
-		# remove variants outsides of new.centroid.range
-		new.centroid[[i]] <- new.centroid[[i]][new.centroid[[i]] >= 4*new.centroid.range[[i]][1] & 
-							new.centroid[[i]] <= 4*new.centroid.range[[i]][2]+3]
-	
 		# update range
-		#high.cvg <- which(cur.read.count >= min.cvg) - 1
-		#if (length(high.cvg) > 0){
-		#	new.centroid.range[[i]] <- floor(range(high.cvg)/4)
-		#}else{
-		#	new.centroid.range[[i]] <- c(0,0)
-		#}
+		high.cvg <- which(cur.read.count >= min.cvg) - 1
+		if (length(high.cvg) > 0){
+			new.centroid.range[[i]] <- floor(range(high.cvg)/4)
+		}else{
+			new.centroid.range[[i]] <- c(0,0)
+		}
 		#new.centroid.range[[i]] <- floor(range(new.centroid[[i]])/4)
 	}
 

@@ -1,3 +1,27 @@
+check.contain <- function(rl.cluster){
+	contain.mat <- matrix(0, length(rl.cluster), length(rl.cluster))	
+	for (i in 1:length(rl.cluster)){
+		for (j in 1:length(rl.cluster)){
+			if (i==j) next
+			overlap.start <- max(rl.cluster[[i]]$centroid.range[1], rl.cluster[[j]]$centroid.range[1])
+			overlap.end <- min(rl.cluster[[i]]$centroid.range[2], rl.cluster[[j]]$centroid.range[2])
+			overlap.len <- overlap.end - overlap.start
+			if (rl.cluster[[i]]$centroid.range[1] < rl.cluster[[j]]$centroid.range[1] | 
+				rl.cluster[[i]]$centroid.range[2] > rl.cluster[[j]]$centroid.range[2])	
+				next
+			centroid.i <- rl.cluster[[i]]$centroid
+			centroid.j <- rl.cluster[[j]]$centroid
+			centroid.j <- centroid.j[centroid.j >= 4*overlap.start & centroid.j <= 4*overlap.end+3]
+			
+			if (identical(centroid.i, centroid.j))
+				contain.mat[i,j] <- 1
+		}
+	}
+	is.contained <- apply(contain.mat, 1, function(x) any(x==1))
+	is.contained
+}
+
+
 assemble.trim.centroid <- function(m5.data.sub, centroid, centroid.range, min.cvg = 20)
 {
 	# if centroid has no variants quit
@@ -187,6 +211,30 @@ assemble.core <- function(encode.data, m5.data, centroid, centroid.range, min.ov
 
 link.scafold <- function(rl.cluster)
 {
+	adj.mat <- matrix(0, length(rl.cluster), length(rl.cluster))
+	for (i in 1:length(rl.cluster)){
+		for (j in 1:length(rl.cluster)){
+			if (i==j) next
+			if (rl.cluster[[i]]$centroid.range[2] > rl.cluster[[j]]$centroid.range[2])
+				next
+			overlap.start <- max(rl.cluster[[i]]$centroid.range[1], rl.cluster[[j]]$centroid.range[1])
+			overlap.end <- min(rl.cluster[[i]]$centroid.range[2], rl.cluster[[j]]$centroid.range[2])
+			
+			if (overlap.start > overlap.end) next			
+			centroid.i <- rl.cluster[[i]]$centroid[rl.cluster[[i]]$centroid >= 4*overlap.start &
+							rl.cluster[[i]]$centroid <= 4*overlap.end+3]
+			centroid.j <- rl.cluster[[j]]$centroid[rl.cluster[[j]]$centroid >= 4*overlap.start &
+                                                        rl.cluster[[j]]$centroid <= 4*overlap.end+3]
+			if (identical(centroid.i, centroid.j) & length(centroid.i)>=1)
+				adj.mat[i,j] <- 1
+		}
+	}
+	adj.mat
+}
+
+
+link.scafold.bak <- function(rl.cluster)
+{
 	haplotypes <- list()
 	haplotypes.range <- list()
 	for (i in 1:length(rl.cluster)){
@@ -206,7 +254,7 @@ link.scafold <- function(rl.cluster)
 								haplotypes[[j]] <= 4*overlap.end+3]
 				cur.centroid <- rl.cluster[[i]]$centroid[rl.cluster[[i]]$centroid >= 4*overlap.start &
 								rl.cluster[[i]]$centroid <= 4*overlap.end+3]
-				if (identical(cur.haplotype, cur.centroid)){
+				if (identical(cur.haplotype, cur.centroid) & length(cur.haplotype) >= 1){
 					haplotypes[[j]] <- sort(unique(c(haplotypes[[j]], rl.cluster[[i]]$centroid)))
 					haplotypes.range[[j]][1] <- min(haplotypes.range[[j]][1], rl.cluster[[i]]$centroid.range[1])
 					haplotypes.range[[j]][2] <- max(haplotypes.range[[j]][2], rl.cluster[[i]]$centroid.range[2])
@@ -221,29 +269,6 @@ link.scafold <- function(rl.cluster)
 		}
 	}
 	list(haplotypes=haplotypes, haplotypes.range=haplotypes.range)
-}
-
-
-link.scafold.bak <- function(rl.cluster)
-{
-	node.all <- lapply(rl.cluster, function(x) x$centroid)
-	node.all <- sort(unique(unlist(node.all)))
-	adj.mat <- matrix(0, length(node.all), length(node.all))
-	rownames(adj.mat) <- node.all
-	colnames(adj.mat) <- node.all
-	for (i in 1:length(rl.cluster)){
-		print(i)
-		for (j in 1:length(rl.cluster[[i]]$trim)){
-			idx <- match(rl.cluster[[i]]$trim[[j]]$centroid.trim, node.all)
-			if (length(idx) < 2)
-				next
-				#stop('length(idx) < 2')
-			for (k in 1:(length(idx)-1)){
-				adj.mat[idx[k], idx[k+1]] <- 1
-			}
-		}
-	}
-	adj.mat	
 }
 
 
