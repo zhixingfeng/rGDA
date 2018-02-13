@@ -16,8 +16,10 @@ check_contained_reads <- function(encode.data, m5.data, min.overlap = 0, rm_empt
 		}
 		for (j in 1:length(encode.data)){
                         if (i==j) next
-                        if (m5.data$tStart[i] <= m5.data$tStart[j] | m5.data$tEnd[i] >= m5.data$tEnd[j])
+                        if (m5.data$tStart[i] < m5.data$tStart[j] | m5.data$tEnd[i] > m5.data$tEnd[j])
                                 next
+			if (m5.data$tStart[i] == m5.data$tStart[j] & m5.data$tEnd[i] == m5.data$tEnd[j])
+				next
 			if (m5.data$tEnd[i] - m5.data$tStart[i] + 1 <  min.overlap)
 				next
                         

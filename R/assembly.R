@@ -75,7 +75,7 @@ assemble.trim.centroid.core <- function(m5.data.sub, centroid, centroid.range, m
 }
 
 assemble <- function(encode.data, m5.data, centroid, centroid.range, min.idx.on = 20, min.cvg = 20, min.overlap = 200, 
-		max.iter = 50, is.trim=TRUE)
+			max.iter = 50, is.trim=TRUE, is.full.comp = TRUE)
 {
 	#------------- check input data ------------#
         if (length(encode.data)!=nrow(m5.data)){
@@ -95,7 +95,7 @@ assemble <- function(encode.data, m5.data, centroid, centroid.range, min.idx.on 
 	for (i in 1:max.iter){
 		rl.core <- assemble.core(encode.data.sub, m5.data.sub,
                                         centroid.update, centroid.range.update,
-                                        min.overlap = min.overlap)
+                                        min.overlap = min.overlap, is.full.comp = is.full.comp)
 		if (length(rl.core$centroid)==0 | identical(rl.core$centroid, centroid.update) | length(rl.core$idx.on) < min.idx.on)	
 			break
 		centroid.update <- rl.core$centroid
@@ -114,45 +114,7 @@ assemble <- function(encode.data, m5.data, centroid, centroid.range, min.idx.on 
 	rl.core
 }
 
-assemble.left <- function(encode.data, m5.data, centroid, centroid.range, min.cvg = 20, min.overlap = 200, max.iter = 50)
-{
-	 #------------- check input data ------------#
-        if (length(encode.data)!=nrow(m5.data)){
-                stop('encode.data and m5.data do not match.')
-        }
-
-	idx.on <- 1:length(encode.data)
-	for (i in 1:max.iter){
-		# trim centroid
-		idx <- idx.on[m5.data$tStart[idx.on] <= centroid.range[1] & m5.data$tEnd[idx.on] > centroid.range[1]]
-		
-		cvg.profile <- rep(0, 4*centroid.range[2] + 3 - 4*centroid.range[1] + 1)
-		for (j in idx){
-			cur.start <- max(m5.data$tStart[j], centroid.range[1])
-			cur.end <- min(m5.data$tEnd[j], centroid.range[2])
-			cur.loci <- (4*(cur.start - centroid.range[1]) + 1) : (4*(cur.end - centroid.range[1]) + 3 + 1)
-			cvg.profile[cur.loci] <- cvg.profile[cur.loci] + 1
-		}
-		if (sum(cvg.profile >= min.cvg) == 0)
-			break
-		centroid.range.upper <- floor((max(which(cvg.profile >= min.cvg)) - 1 + 4*centroid.range[1]) / 4)
-		centroid.range <- c(centroid.range[1], min(centroid.range.upper, centroid.range[2]))
-		centroid <- centroid[centroid >= 4*centroid.range[1] & centroid <= 4*centroid.range[2] + 3]	
-		if (length(centroid)==0)
-			break
-
-		# update centroid
-		rl.core <- assemble.core(encode.data, m5.data, centroid, centroid.range, min.overlap = min.overlap)
-		idx.on <- rl.core$idx.on
-		if (identical(centroid, rl.core$centroid))
-			break
-		centroid <- rl.core$centroid
-	}
-
-	list(centroid = centroid, centroid.range = centroid.range, idx.on = idx.on, n.iter = i)
-}
-
-assemble.core <- function(encode.data, m5.data, centroid, centroid.range, min.overlap=200)
+assemble.core <- function(encode.data, m5.data, centroid, centroid.range, min.overlap=200, is.full.comp = TRUE)
 {
 	#------------- check input data ------------#
 	if (length(encode.data)!=nrow(m5.data)){
@@ -169,7 +131,11 @@ assemble.core <- function(encode.data, m5.data, centroid, centroid.range, min.ov
 			next
 
 		common.var <- intersect(encode.data[[i]], centroid)
-                n.centroid.overlap <- sum(centroid>=4*m5.data$tStart[i] & centroid<=4*m5.data$tEnd[i]+3)
+		if (is.full.comp){
+			n.centroid.overlap <- length(centroid)
+		}else{
+                	n.centroid.overlap <- sum(centroid>=4*m5.data$tStart[i] & centroid<=4*m5.data$tEnd[i]+3)
+		}
                 if (length(common.var)>n.centroid.overlap)
                 	stop('length(common.var)>n.centroid.overlap')
                 if (length(common.var) >= ceiling(n.centroid.overlap/2) & n.centroid.overlap > 0)
