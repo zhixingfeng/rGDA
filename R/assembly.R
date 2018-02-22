@@ -1,3 +1,4 @@
+library(dequer)
 check.contain <- function(rl.cluster){
 	contain.mat <- matrix(0, length(rl.cluster), length(rl.cluster))	
 	for (i in 1:length(rl.cluster)){
@@ -236,5 +237,106 @@ link.scafold.bak <- function(rl.cluster)
 	}
 	list(haplotypes=haplotypes, haplotypes.range=haplotypes.range)
 }
+
+merge.scafold <- function(adj.mat)
+{
+	start.nodes <- which(apply(adj.mat, 2, sum) == 0)
+        adj.list <- apply(adj.mat, 1, function(x) which(x==1))
+	path.list <- list()
+	while(TRUE){
+		if (length(start.nodes) == 0 | is.null(start.nodes)){
+                        break
+		}else{
+			rl.core <- merge.scafold.core(adj.list, start.nodes)
+			path.list <- c(path.list, rl.core$path.list)
+			start.nodes <- rl.core$new.start.nodes
+		}
+	}
+	path.list
+}
+
+merge.scafold.core <- function(adj.list, start.nodes)
+{
+	path.list <- list()
+	new.start.nodes <- list()
+	n.path <- 0
+	for (cur.start.node in start.nodes){
+		n.path <- n.path + 1
+		cur.node <- cur.start.node
+		cur.path <- stack()
+		while(TRUE){
+			push(cur.path, cur.node)
+			# if number of daughter nodes is 1, then get into deeper
+			if (length(adj.list[[cur.node]]) == 1){
+				cur.node <- adj.list[[cur.node]][[1]]
+				next
+			}
+			
+			# if no daughter nodes, stop
+			if (length(adj.list[[cur.node]]) == 0){
+				new.start.nodes[[n.path]] <- integer(0)
+				path.list[[n.path]] <- rev(unlist(as.list(cur.path)))
+                                break
+                        }
+			
+			# if more than 1 daughter nodes, stop and add the daughter nodes to new start.nodes
+			if (length(adj.list[[cur.node]]) > 1){
+				new.start.nodes[[n.path]] <- adj.list[[cur.node]]
+				path.list[[n.path]] <- rev(unlist(as.list(cur.path)))
+                                break
+                        }
+		}
+	}
+		
+	list(path.list = path.list, new.start.nodes = sort(unique(unlist(new.start.nodes))))
+}
+
+merge.scafold.extend <- function(adj.mat)
+{
+	start.nodes <- which(apply(adj.mat, 2, sum) == 0)
+        adj.list <- apply(adj.mat, 1, function(x) which(x==1))
+        path.list <- list()
+	
+	while (length(start.nodes) > 0){
+		cur.rl <- merge.scafold.extend.core(adj.list, start.nodes)
+		start.nodes <- cur.rl$new.start.nodes
+		path.list <- c(path.list, cur.rl$path.list)
+	}
+	path.list
+}
+
+merge.scafold.extend.core <- function(adj.list, start.nodes)
+{
+	path.list <- list()
+	new.start.nodes <- integer()
+        for (cur.start.node in start.nodes){
+		# follow unambigous apth from cur.node
+        	rl <- merge.scafold.core(adj.list, cur.start.node)
+		
+		# number of new start nodes should never be 1
+		if (length(rl$new.start.nodes) == 1)
+			stop('length(rl$new.start.nodes) == 1')
+		# if hit the end, stop
+		if (length(rl$new.start.nodes) == 0){
+			path.list <- c(path.list, rl$path.list)
+			next
+		}
+
+		# if hit divided paths, follow each of them
+		if (length(rl$new.start.nodes) > 1){
+			rl.new <- merge.scafold.core(adj.list, rl$new.start.node)
+			for (i in 1:length(rl.new$path.list)){
+				rl.new$path.list[[i]] <- c(rl$path.list[[1]], rl.new$path.list[[i]])
+			}
+			path.list <- c(path.list, rl.new$path.list)
+			
+			add.new.start.nodes <- rl.new$new.start.nodes[sapply(adj.list[rl.new$new.start.nodes],length) > 0]
+			new.start.nodes <- c(new.start.nodes, add.new.start.nodes)
+		}
+	}
+	
+	list(path.list = path.list, new.start.nodes = sort(unique(new.start.nodes)))
+}
+
 
 

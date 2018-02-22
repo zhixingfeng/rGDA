@@ -1,44 +1,44 @@
-find_contained_reads <- function(encode.data, m5.data, min.overlap.var = 1, min.overlap.len=200)
-{
+#find_contained_reads <- function(encode.data, m5.data, min.overlap.var = 1, min.overlap.len=200)
+#{
 	###--------- check if encode.data and m5.data match --------###
-        if (length(encode.data)!=nrow(m5.data)){
-                stop('encode.data and m5.data do not match.')
-        }
+#        if (length(encode.data)!=nrow(m5.data)){
+#                stop('encode.data and m5.data do not match.')
+#        }
 
         ###--------- remove reads contained in another read ------###
-        read.pair.mat <- matrix(FALSE, length(encode.data), length(encode.data))
-        for (i in 1:length(encode.data)){
-                print(i)
-                for (j in 1:length(encode.data)){
+#        read.pair.mat <- matrix(FALSE, length(encode.data), length(encode.data))
+#        for (i in 1:length(encode.data)){
+#                print(i)
+#                for (j in 1:length(encode.data)){
                         # don't compare reads to themselves
-			if (i==j) next
+#			if (i==j) next
 			# don't compare non-overlaping reads
-                        if (m5.data$tStart[i] > m5.data$tEnd[j] | m5.data$tEnd[i] < m5.data$tStart[j])
-                                next
-			# get overlap region
-			overlap.start <- max(m5.data$tStart[i], m5.data$tStart[j])	
-			overlap.end <- min(m5.data$tEnd[i], m5.data$tEnd[j])
-			overlap.len <- overlap.end - overlap.start + 1
-			if (overlap.len < min.overlap.len)
-				next
+#                       if (m5.data$tStart[i] > m5.data$tEnd[j] | m5.data$tEnd[i] < m5.data$tStart[j])
+#                                next
+#			# get overlap region
+#			overlap.start <- max(m5.data$tStart[i], m5.data$tStart[j])	
+#			overlap.end <- min(m5.data$tEnd[i], m5.data$tEnd[j])
+#			overlap.len <- overlap.end - overlap.start + 1
+#			if (overlap.len < min.overlap.len)
+#				next
 			
 			# get number of common variants
-			n.common.var <- length(intersect(encode.data[[i]], encode.data[[j]]))
+#			n.common.var <- length(intersect(encode.data[[i]], encode.data[[j]]))
 			
 			# get number of variants of reads i and j in overlaping region
-			n.var.overlap.i <- sum(encode.data[[i]]>=4*overlap.start & encode.data[[i]]<=4*overlap.end+3)
-			n.var.overlap.j <- sum(encode.data[[j]]>=4*overlap.start & encode.data[[j]]<=4*overlap.end+3)
+#			n.var.overlap.i <- sum(encode.data[[i]]>=4*overlap.start & encode.data[[i]]<=4*overlap.end+3)
+#			n.var.overlap.j <- sum(encode.data[[j]]>=4*overlap.start & encode.data[[j]]<=4*overlap.end+3)
 			
 				
-                        if (n.var.overlap.i > min.overlap.var & n.var.overlap.j > min.overlap.var & 
-				n.common.var >= ceiling(n.var.overlap.i/2) & n.common.var >= ceiling(n.var.overlap.j/2)){
-                                read.pair.mat[i,j] <- TRUE
-                        }
-                }
-        }
-        read.pair.mat
+ #                       if (n.var.overlap.i > min.overlap.var & n.var.overlap.j > min.overlap.var & 
+#				n.common.var >= ceiling(n.var.overlap.i/2) & n.common.var >= ceiling(n.var.overlap.j/2)){
+#                                read.pair.mat[i,j] <- TRUE
+#                        }
+#                }
+#        }
+#        read.pair.mat
 	
-}
+#}
 
 
 kmeans_reads <- function(encode.data, m5.data, centroid.seed, centroid.seed.range, min.cvg=20, min.overlap=200, max.iter=200)
