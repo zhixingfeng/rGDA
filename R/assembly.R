@@ -1,4 +1,51 @@
 library(dequer)
+reads.to.graph <- function(encode.data, m5.data)
+{
+	if (length(encode.data) != nrow(m5.data))
+		stop('length(encode.data) != nrow(m5.data)')
+	var.set <- sort(unique(unlist(encode.data)))	
+	adj.mat <- matrix(0, nrow = 2*length(var.set), ncol = 2*length(var.set))
+	nodes <- c(var.set, -var.set)
+	rownames(adj.mat) <- nodes
+	colnames(adj.mat) <- nodes
+	for (i in 1:length(encode.data)){
+		if (i %% 100 == 0)
+			print(i)
+		if (length(encode.data[[i]]) == 0)
+			next
+		
+		cur.var <- -var.set[var.set >= 4*m5.data$tStart[i] & var.set <= 4*m5.data$tEnd[i] + 3]
+		idx.mut <- match(encode.data[[i]], -cur.var)
+		if (any(is.na(idx.mut)))
+			stop('match(encode.data[[i]], -cur.var) == NA')
+		cur.var[idx.mut] <- encode.data[[i]]
+		
+		if (length(cur.var) < 2)
+			next
+		
+		cur.var.left <- cur.var[-length(cur.var)]
+		cur.var.right <- cur.var[-1]
+		
+		idx.left <- match(cur.var.left, nodes)
+		if (any(is.na(idx.left)))
+			stop('any(is.na(idx.left))')
+		
+		idx.right <- match(cur.var.right, nodes)
+		if (any(is.na(idx.right)))
+			stop('any(is.na(idx.right))')
+		
+		if (length(idx.left) != length(idx.right))
+			stop('length(idx.left) != length(idx.right)')
+		
+		for (j in 1:length(idx.left)){
+			adj.mat[idx.left[j], idx.right[j]] <- adj.mat[idx.left[j], idx.right[j]] + 1
+		}
+	}
+	print(i)
+	adj.mat
+}
+
+
 check.contain <- function(rl.cluster){
 	contain.mat <- matrix(0, length(rl.cluster), length(rl.cluster))	
 	for (i in 1:length(rl.cluster)){
@@ -337,6 +384,28 @@ merge.scafold.extend.core <- function(adj.list, start.nodes)
 	
 	list(path.list = path.list, new.start.nodes = sort(unique(new.start.nodes)))
 }
+
+
+assign.reads.to.centroids <- function(encode.data, centroids)
+{
+	centroid.reads <- lapply(1:length(centroids), function(x) integer())
+	for (i in 1:length(encode.data)){
+		if (i %% 100 == 0)
+			cat(i,'\r')
+		n.overlap <- sapply(centroids, function(x,t) length(intersect(x,t)), t = encode.data[[i]])
+		if (all(n.overlap == 0))
+			next
+		idx.hit <- which(n.overlap == max(n.overlap))
+		for (j in idx.hit){
+			centroid.reads[[j]] <- c(centroid.reads[[j]], i)
+		}
+	}
+	cat(i, '\n')
+	centroid.reads
+}
+
+
+
 
 
 
