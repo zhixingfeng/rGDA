@@ -4,6 +4,12 @@ load.encodefile <- function(encodefile)
 	lapply(strsplit(x.raw,'\t'), as.integer )
 }
 
+save.encodefile <- function(encode.data, out.file)
+{
+	encode.data.txt <- sapply(encode.data, function(x) paste(x,collapse='\t'))
+	writeLines(encode.data.txt, out.file)
+}
+
 load.m5file <- function(m5file)
 {
 	x <- read.table(m5file, header=FALSE, as.is=TRUE)
@@ -12,6 +18,11 @@ load.m5file <- function(m5file)
 	x$tEnd <- x$tEnd - 1
 	x$qEnd <- x$qEnd - 1
 	x
+}
+
+save.m5file <- function(m5.data, out.file)
+{
+	write.table(m5.data, row.names = FALSE, col.names = FALSE, quote = FALSE, sep = ' ', file = out.file )
 }
 
 load.cmpreadsfile <- function(cmpreadsfile, is.full=FALSE)
