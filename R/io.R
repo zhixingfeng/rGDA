@@ -1,3 +1,5 @@
+
+
 load.encodefile <- function(encodefile)
 {
 	x.raw <- readLines(encodefile)
@@ -24,6 +26,15 @@ save.m5file <- function(m5.data, out.file)
 {
 	write.table(m5.data, row.names = FALSE, col.names = FALSE, quote = FALSE, sep = ' ', file = out.file )
 }
+
+load.m4file <- function(m4file){
+	x <- read.table(m4file, header=FALSE, as.is=TRUE)
+	names(x) <- c('qName', 'tName', 'score', 'percentSimilarity', 'qStrand', 'qStart', 'qEnd', 'qLength', 'tStrand', 'tStart', 'tEnd', 'tLength', 'mapQV')
+	x$tEnd <- x$tEnd - 1
+        x$qEnd <- x$qEnd - 1
+	x
+}
+
 
 load.cmpreadsfile <- function(cmpreadsfile, is.full=FALSE)
 {
