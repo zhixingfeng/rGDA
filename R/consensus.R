@@ -52,7 +52,9 @@ get_consensus <- function(encode.data.gp, m5.data.gp)
 	# majority vote 
 	cons.seq <- which(var.count>=ceiling(read.count/2) & read.count>0) - 1
 
-	list(cons.seq = cons.seq, var.count = var.count, read.count = read.count)
+	list(cons.seq = cons.seq, var.count = var.count, read.count = read.count, prop = var.count / read.count)
 }
+
+
 
 
