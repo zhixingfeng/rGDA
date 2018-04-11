@@ -30,11 +30,11 @@ slide_win_clustering_core <- function(encode.data.win, m5.data.win, tmp.dir, min
 	rl.cons
 }
 
-get_consensus <- function(encode.data.gp, m5.data.gp)
+get_consensus <- function(encode.data.gp, m5.data.gp, rm.del = TRUE)
 {
 	max.encode <- max(4*m5.data.gp$tEnd+3)
-        var.count <- integer(max.encode + 1)
-        read.count <- integer(max.encode + 1)			
+        var.count <- rep(0,max.encode + 1)
+        read.count <- rep(0,max.encode + 1)			
 
 	# count number of variants and coverage for each locus
         for (i in 1:length(encode.data.gp)){
@@ -44,16 +44,40 @@ get_consensus <- function(encode.data.gp, m5.data.gp)
         }
 
         # count coverage for each locus
-        for (i in 1:nrow(m5.data.gp)){
-                read.count[(4*m5.data.gp$tStart[i]+1):(4*m5.data.gp$tEnd[i]+3+1)] <-
-                        read.count[(4*m5.data.gp$tStart[i]+1):(4*m5.data.gp$tEnd[i]+3+1)] + 1
-        }
+	if (rm.del){
+		read.count <- pileup_reads_count(m5.data.gp)
+	}else{
+	        for (i in 1:nrow(m5.data.gp)){
+                	read.count[(4*m5.data.gp$tStart[i]+1):(4*m5.data.gp$tEnd[i]+3+1)] <-
+                	        read.count[(4*m5.data.gp$tStart[i]+1):(4*m5.data.gp$tEnd[i]+3+1)] + 1
+        	}
+	}
 
 	# majority vote 
 	cons.seq <- which(var.count>=ceiling(read.count/2) & read.count>0) - 1
 
 	list(cons.seq = cons.seq, var.count = var.count, read.count = read.count, prop = var.count / read.count)
 }
+
+get_consensus_recode <- function(encode.data.gp, m5.data.gp)
+{
+	max.encode <- max(4*m5.data.gp$tEnd+3)
+	pu.var <- pileup_var(encode.data.gp, max.encode)
+	pu.read <- pileup_reads(m5.data.gp)
+	
+	var.count <- sapply(pu.var, length)
+	read.count <- sapply(pu.read, length)
+	
+	prop <- mapply(function(x,y) length(intersect(x,y)) / length(y), x = pu.var, y = pu.read)
+	#prop <- mapply(function(x,y) length(x) / length(union(x,y)), x = pu.var, y = pu.read)
+
+	cons.seq <- which(prop >0.5 & read.count > 0) - 1
+
+	list(cons.seq = cons.seq, var.count = var.count, read.count = read.count, prop = prop)
+}
+
+
+
 
 
 
