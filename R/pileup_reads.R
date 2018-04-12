@@ -56,3 +56,15 @@ pileup_var <- function(encode.data, max.encode)
 }
 
 
+print_pileup <- function(pu, out.file )
+{
+	pu.string <- sapply(pu, paste, collapse = ',')
+	writeLines(pu.string, out.file)
+}
+
+
+
+
+
+
+
