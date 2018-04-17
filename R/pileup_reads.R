@@ -62,8 +62,16 @@ print_pileup <- function(pu, out.file )
 	writeLines(pu.string, out.file)
 }
 
-
-
+filter_pileup_var <- function(pu.var, pu.reads)
+{
+	if (length(pu.var) != length(pu.reads))
+		stop('length(pu.var) != length(pu.reads)')
+	pu.var.ft <- list()
+	for (i in 1:length(pu.var)){
+		pu.var.ft[[i]] <- intersect(pu.var[[i]], pu.reads[[i]])
+	}
+	pu.var.ft
+}
 
 
 
