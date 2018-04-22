@@ -24,6 +24,8 @@ load.m5file <- function(m5file)
 
 save.m5file <- function(m5.data, out.file)
 {
+	m5.data$tEnd <- m5.data$tEnd + 1
+	m5.data$qEnd <- m5.data$qEnd + 1
 	write.table(m5.data, row.names = FALSE, col.names = FALSE, quote = FALSE, sep = ' ', file = out.file )
 }
 
