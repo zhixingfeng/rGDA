@@ -15,7 +15,7 @@ check.m5 <- function(m5.data)
 {
 	tAlign.len <- sapply(m5.data$tAlignedSeq, function(x) sum(s2c(x)!='-'), USE.NAMES = FALSE)
 	read.len <- m5.data$tEnd - m5.data$tStart + 1
-	all(tAlign.len == read.len)
+	tAlign.len == read.len
 }
 
 

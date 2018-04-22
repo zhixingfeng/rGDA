@@ -3,8 +3,8 @@ trim.m5 <- function(encode.data.raw, m5.data.raw)
 	if (length(encode.data.raw) != nrow(m5.data.raw))
 		stop('length(encode.data.raw) != nrow(m5.data.raw)')
 
-	tStart <- floor(sapply(encode.data.raw, function(x) if(length(x)>0) min(x) else NaN ) / 4) - 1
-	tEnd <-floor(sapply(encode.data.raw, function(x) if(length(x)>0) max(x) else NaN) / 4) + 1
+	tStart <- floor(sapply(encode.data.raw, function(x) if(length(x)>0) min(x) else NaN ) / 4)
+	tEnd <-floor(sapply(encode.data.raw, function(x) if(length(x)>0) max(x) else NaN) / 4)
 	idx <- which(!is.na(tStart))
 	if (any(tStart[idx] > tEnd[idx]))
 		stop('any(tStart > tEnd)')
