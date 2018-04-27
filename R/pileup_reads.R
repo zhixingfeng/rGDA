@@ -18,14 +18,17 @@ pileup_reads_count <- function(m5.data){
 	read.count
 }
 
-pileup_reads <- function(m5.data)
+pileup_reads <- function(m5.data, min.len = 500)
 {
 	max.encode <- 4*max(m5.data$tEnd) + 3
 	pu.read <- lapply(1:(max.encode+1), function(x) integer(0))
 	for (i in 1:nrow(m5.data)){
                 if (i %%100 == 0)
                         print(i)
-                # remove insertions
+                # discard short reads
+		if (m5.data$tEnd[i] - m5.data$tStart[i] +1 < min.len)
+			next
+		# remove insertions
                 idx <- which(s2c(m5.data$tAlignedSeq[i]) != '-')
                 t.align <- s2c(m5.data$tAlignedSeq[i])[idx]
                 q.align <- s2c(m5.data$qAlignedSeq[i])[idx]

@@ -59,7 +59,7 @@ get_consensus <- function(encode.data.gp, m5.data.gp, rm.del = TRUE)
 	list(cons.seq = cons.seq, var.count = var.count, read.count = read.count, prop = var.count / read.count)
 }
 
-get_consensus_recode <- function(encode.data.gp, m5.data.gp)
+get_consensus_recode <- function(encode.data.gp, m5.data.gp, min.read.count = 5)
 {
 	max.encode <- max(4*m5.data.gp$tEnd+3)
 	pu.var <- pileup_var(encode.data.gp, max.encode)
@@ -71,10 +71,30 @@ get_consensus_recode <- function(encode.data.gp, m5.data.gp)
 	prop <- mapply(function(x,y) length(intersect(x,y)) / length(y), x = pu.var, y = pu.read)
 	#prop <- mapply(function(x,y) length(x) / length(union(x,y)), x = pu.var, y = pu.read)
 
-	cons.seq <- which(prop >0.5 & read.count > 0) - 1
+	cons.seq <- which(prop >0.5 & read.count >= min.read.count) - 1
 
 	list(cons.seq = cons.seq, var.count = var.count, read.count = read.count, prop = prop)
 }
+
+get_cons_bymovie <- function(encode.data, m5.data, min.read.count = 5)
+{
+        if (!all(validate.data(encode.data, m5.data)))
+                stop('!all(validate.data(encode.data, m5.data))')
+        if (!all(check.m5(m5.data)))
+                stop('!all(check.m5(m5.data))')
+        
+        movies <- get.movie(m5.data)
+        encode.data.movie <- split(encode.data, movies)
+        m5.data.movie <- split(m5.data, movies)
+
+        cons.list <- list()
+        for (i in 1:length(encode.data.movie))
+                cons.list[[i]] <- get_consensus_recode(encode.data.movie[[i]], m5.data.movie[[i]], min.read.count)
+        cons.list
+}
+
+
+
 
 
 
