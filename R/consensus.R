@@ -62,7 +62,9 @@ get_consensus <- function(encode.data.gp, m5.data.gp, rm.del = TRUE)
 get_consensus_recode <- function(encode.data.gp, m5.data.gp, min.read.count = 5)
 {
 	max.encode <- max(4*m5.data.gp$tEnd+3)
+	print('pileup_var')
 	pu.var <- pileup_var(encode.data.gp, max.encode)
+	print('pileup_reads')
 	pu.read <- pileup_reads(m5.data.gp)
 	
 	var.count <- sapply(pu.var, length)

@@ -42,4 +42,36 @@ eval.centroid <- function(centroids, snp.code, is.fdr = FALSE)
 	list(acc = acc, group.id = group.id)
 }
 
+eval.consensus <- function(cons, snp.code.raw, min.read.count = 10, is.fdr = FALSE)
+{
+	cons.exl <- which(cons$read.count < min.read.count) - 1
+	cons.code <- setdiff(cons$cons.seq, cons.exl)
+	
+	#snp.code <- setdiff(snp.code.raw, cons.exl)
+	snp.code <- lapply(snp.code.raw, function(x,y) setdiff(x,y), y= cons.exl)	
+
+	if (length(cons.code)==0){
+        	return(list(acc = NaN, group.id = NaN))
+        }
+
+	acc <- 0 
+	group.id <- NaN
+	for (j in 1:length(snp.code)){
+		cur.snp.code <- snp.code[[j]][snp.code[[j]] >= min(cons.code) & snp.code[[j]] <= max(cons.code)]
+		if (is.fdr){
+                	cur.acc <- length(intersect(cons.code, cur.snp.code)) / length(cons.code)
+                }else{
+                        cur.acc <- length(intersect(cons.code, cur.snp.code)) / length(union(cons.code, cur.snp.code))
+                }
+		if (cur.acc >= acc){
+			acc <- cur.acc
+			group.id <- j
+		}
+	}
+	list(acc = acc, group.id = group.id)
+}
+
+
+
+
 

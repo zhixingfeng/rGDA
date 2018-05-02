@@ -67,4 +67,18 @@ load.dist <- function(dist.file, min.overlap = 100){
 	dist.mat
 }
 
+load.testfile <- function(test.file)
+{
+	test.data.raw <- read.table(test.file, header = FALSE, sep = '\t', as.is = TRUE)
+	test.data <- test.data.raw[,1:3]
+	names(test.data) <- c('read_id', 'start', 'end')
+
+	test.data$common <- lapply(strsplit(test.data.raw[,4],','), as.integer) 
+	test.data$diff <- lapply(strsplit(test.data.raw[,5],','), as.integer)
+
+	test.data$common_prop <- lapply(strsplit(test.data.raw[,6],','), as.numeric)
+	test.data$diff_prop <- lapply(strsplit(test.data.raw[,7],','), as.numeric)
+	test.data
+}
+
 
