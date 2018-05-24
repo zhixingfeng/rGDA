@@ -1,6 +1,8 @@
 load.jaccardfile <- function(jaccardfile)
 {
-	read.table(jaccardfile, header=FALSE, as.is=TRUE, sep=',')	
+	x <- read.table(jaccardfile, header=FALSE, as.is=TRUE, sep=',')	
+	names(x) <- c('id_1', 'id_2', 'jaccard', 'n_common', 'n_union', 'overlap', 'start_1', 'end_1', 'start_2', 'end_2')
+	x
 }
 
 load.encodefile <- function(encodefile)
