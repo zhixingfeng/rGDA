@@ -1,4 +1,7 @@
-
+load.jaccardfile <- function(jaccardfile)
+{
+	read.table(jaccardfile, header=FALSE, as.is=TRUE, sep=',')	
+}
 
 load.encodefile <- function(encodefile)
 {
