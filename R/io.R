@@ -1,17 +1,29 @@
 load.annfile <- function(annfile)
 {
 	x.raw <- read.table(annfile, header = FALSE, as.is = TRUE, sep = '\t')
-	cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
-	cons.seed <- lapply(strsplit(x.raw[,4],','), as.integer)	
-	cons.loci <- lapply(strsplit(x.raw[,5],','), as.integer)
-	cons.prop <- lapply(strsplit(x.raw[,6],','), as.numeric)
-	cons.pu_var_count <- lapply(strsplit(x.raw[,7],','), as.integer)
-	cons.pu_read_count <- lapply(strsplit(x.raw[,8],','), as.integer)
-	x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], cons.seed, cons.loci, cons.prop, cons.pu_var_count, cons.pu_read_count), stringsAsFactors = FALSE)
-	names(x) <- c('cons_seq', 'start', 'end', 'seed', 'loci', 'prop', 'pu_var_count', 'pu_read_count')
-	x$start <- as.integer(x$start)
-	x$end <- as.integer(x$end)
-	x
+	if (ncol(x.raw) == 8){
+		cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
+		cons.seed <- lapply(strsplit(x.raw[,4],','), as.integer)	
+		cons.loci <- lapply(strsplit(x.raw[,5],','), as.integer)
+		cons.prop <- lapply(strsplit(x.raw[,6],','), as.numeric)
+		cons.pu_var_count <- lapply(strsplit(x.raw[,7],','), as.integer)
+		cons.pu_read_count <- lapply(strsplit(x.raw[,8],','), as.integer)
+		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], cons.seed, cons.loci, cons.prop, cons.pu_var_count, cons.pu_read_count), stringsAsFactors = FALSE)
+		names(x) <- c('cons_seq', 'start', 'end', 'seed', 'loci', 'prop', 'pu_var_count', 'pu_read_count')
+		x$start <- as.integer(x$start)
+		x$end <- as.integer(x$end)
+		return(x)
+	}else{
+		if (ncol(x.raw) == 3){
+			cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
+			x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3]), stringsAsFactors = FALSE)
+			names(x) <- c('cons_seq', 'start', 'end')
+			x$start <- as.integer(x$start)
+			x$end <- as.integer(x$end)
+		}
+		return(x)
+	}
+	
 }
 
 load.jaccardfile <- function(jaccardfile)

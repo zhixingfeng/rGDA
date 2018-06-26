@@ -7,5 +7,6 @@ Author: Zhixing Feng
 Maintainer: Zhixing Feng <zxfeng.thu@gmail.com>
 Description: More about what it does (maybe more than one line)
 License: GPL (>= 2)
-Imports: Rcpp (>= 0.12.15)
-LinkingTo: Rcpp
+Imports: Rcpp (>= 0.12.15), dequer
+LinkingTo: Rcpp, dequer
+Depends: dequer
