@@ -2,7 +2,7 @@ ann_check_nccontig <- function(ann.data)
 {
 	is_nc <- rep(TRUE, nrow(ann.data))
 	for (i in 1:nrow(ann.data)){
-		idx <- which(ann.data$start <= ann.data$start[i] & ann.data$end >= ann.data$end[i])
+		idx <- which((ann.data$start < ann.data$start[i] & ann.data$end >= ann.data$end[i]) | (ann.data$start <= ann.data$start[i] & ann.data$end > ann.data$end[i]) )
 		for (j in idx){
 			if (j == i) next
 			start_code <- 4*ann.data$start[i]
