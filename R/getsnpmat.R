@@ -1,4 +1,4 @@
-library(mummerSV)
+#library(mummerSV)
 getsnpmat <- function(snp.files, ref.name, genome.size)
 {
 	# load snp data
