@@ -115,3 +115,13 @@ load.testfile <- function(test.file)
 }
 
 
+load.varfile <- function(var.file)
+{
+	var.data <- read.table(var.file, as.is = TRUE, sep = '\t')
+	names(var.data) <- c('locus', 'base', 'code', 'bf', 'cond_prob', 'joint_prob', 'marginal_prob', 'n_link_loci', 'link_loci')
+	var.data
+}
+
+
+
+
