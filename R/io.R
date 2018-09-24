@@ -1,15 +1,12 @@
 load.annfile <- function(annfile)
 {
 	x.raw <- read.table(annfile, header = FALSE, as.is = TRUE, sep = '\t')
-	if (ncol(x.raw) == 8){
+	if (ncol(x.raw) == 5){
 		cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
 		cons.seed <- lapply(strsplit(x.raw[,4],','), as.integer)	
-		cons.loci <- lapply(strsplit(x.raw[,5],','), as.integer)
-		cons.prop <- lapply(strsplit(x.raw[,6],','), as.numeric)
-		cons.pu_var_count <- lapply(strsplit(x.raw[,7],','), as.integer)
-		cons.pu_read_count <- lapply(strsplit(x.raw[,8],','), as.integer)
-		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], cons.seed, cons.loci, cons.prop, cons.pu_var_count, cons.pu_read_count), stringsAsFactors = FALSE)
-		names(x) <- c('cons_seq', 'start', 'end', 'seed', 'loci', 'prop', 'pu_var_count', 'pu_read_count')
+		cons.neighbor_id <- lapply(strsplit(x.raw[,5],','), as.integer)
+		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], cons.seed, cons.neighbor_id), stringsAsFactors = FALSE)
+		names(x) <- c('cons_seq', 'start', 'end', 'seed', 'neighbor_id')
 		x$start <- as.integer(x$start)
 		x$end <- as.integer(x$end)
 		return(x)
