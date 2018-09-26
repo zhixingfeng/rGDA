@@ -1,4 +1,15 @@
 library(seqinr)
+pileup_var_count <- function(encode.data)
+{	
+	max.encode <- max(unlist(encode.data))
+	var.count <- rep(0,max.encode)
+	for (i in 1:length(encode.data)){
+		var.count[encode.data[[i]]]  <- var.count[encode.data[[i]]] + 1
+	}
+	var.count
+}
+
+
 pileup_reads_count <- function(m5.data){
 	max.encode <- 4*max(m5.data$tEnd) + 3
 	read.count <- rep(0,max.encode + 1)
