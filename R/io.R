@@ -1,12 +1,13 @@
 load.annfile <- function(annfile)
 {
 	x.raw <- read.table(annfile, header = FALSE, as.is = TRUE, sep = '\t')
-	if (ncol(x.raw) == 5){
+	if (ncol(x.raw) == 6){
 		cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
 		cons.seed <- lapply(strsplit(x.raw[,4],','), as.integer)	
 		cons.neighbor_id <- lapply(strsplit(x.raw[,5],','), as.integer)
-		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], cons.seed, cons.neighbor_id), stringsAsFactors = FALSE)
-		names(x) <- c('cons_seq', 'start', 'end', 'seed', 'neighbor_id')
+		cons.tested_loci <- lapply(strsplit(x.raw[,6],','), as.integer)
+		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], cons.seed, cons.neighbor_id, cons.tested_loci), stringsAsFactors = FALSE)
+		names(x) <- c('cons_seq', 'start', 'end', 'seed', 'neighbor_id', 'tested_loci')
 		x$start <- as.integer(x$start)
 		x$end <- as.integer(x$end)
 		return(x)

@@ -1,3 +1,26 @@
+eval.ann <- function(ann.data, true.encode, is.fdr = FALSE)
+{
+	acc <- rep(0,nrow(ann.data))
+	group.id <- rep(NaN,nrow(ann.data))
+	for (i in 1:nrow(ann.data)) {
+		if (i %% 100 == 0)
+			print(i)
+		for (j in 1:length(true.encode)){
+			cur.true.encode <- intersect(true.encode[[j]], c(4*ann.data$tested_loci[[i]], 4*ann.data$tested_loci[[i]]+1, 4*ann.data$tested_loci[[i]]+2, 4*ann.data$tested_loci[[i]]+3))
+
+			if (is.fdr){
+				cur.acc <- length(intersect(ann.data$cons_seq[[i]], cur.true.encode)) / length(ann.data$cons_seq[[i]])
+			}else{
+				cur.acc <- length(intersect(ann.data$cons_seq[[i]], cur.true.encode)) / length(union(ann.data$cons_seq[[i]], cur.true.encode))
+			}
+			if (cur.acc > acc[i]){
+				group.id[i] <- j
+				acc[i] <- cur.acc
+			}
+		}
+	}
+	list(acc = acc, group.id = group.id)
+}
 load.snp.code <- function(snp.mat.file)
 {
 	load(snp.mat.file)
