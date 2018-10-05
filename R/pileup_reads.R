@@ -20,6 +20,8 @@ pileup_var_count_recode <- function(recode.data, recode.ref.data, var.data)
 			pu_var[4*var.data$locus], pu_var[4*var.data$locus+1], pu_var[4*var.data$locus+2], 
 			pu_var[4*var.data$locus+3], cvg), stringsAsFactors=FALSE)
 	
+	names(rl) <- c('locus', 'prop_A', 'prop_C', 'prop_G', 'prop_T', 'count_A', 'count_C', 'count_G', 'count_T', 'cvg')
+	rl
 }
 
 pileup_var_count <- function(encode.data)
