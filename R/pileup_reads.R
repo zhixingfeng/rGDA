@@ -1,4 +1,27 @@
 library(seqinr)
+
+pileup_var_count_recode <- function(recode.data, recode.ref.data, var.data)
+{
+	pu_var <- rep(0, 4*max(var.data$locus)+3)
+	pu_var_ref <- rep(0, 4*max(var.data$locus)+3)
+	
+	pu_var[1:max(unlist(recode.data))] <- pileup_var_count(recode.data)
+	pu_var_ref[1:max(unlist(recode.ref.data))] <- pileup_var_count(recode.ref.data)
+	
+	cvg <- pu_var[4*var.data$locus] + pu_var[4*var.data$locus + 1] + pu_var[4*var.data$locus + 2] + pu_var[4*var.data$locus + 3]
+	cvg <- cvg + pu_var_ref[4*var.data$locus] + pu_var_ref[4*var.data$locus + 1] + pu_var_ref[4*var.data$locus + 2] + pu_var_ref[4*var.data$locus + 3]
+	
+	prop.A <- pu_var[4*var.data$locus] / cvg
+	prop.C <- pu_var[4*var.data$locus + 1] / cvg 	
+	prop.G <- pu_var[4*var.data$locus + 2] / cvg
+	prop.T <- pu_var[4*var.data$locus + 3] / cvg
+	
+	rl <- data.frame(cbind(var.data$locus, prop.A, prop.C, prop.G, prop.T, 
+			pu_var[4*var.data$locus], pu_var[4*var.data$locus+1], pu_var[4*var.data$locus+2], 
+			pu_var[4*var.data$locus+3], cvg), stringsAsFactors=FALSE)
+	
+}
+
 pileup_var_count <- function(encode.data)
 {	
 	max.encode <- max(unlist(encode.data))
