@@ -1,6 +1,19 @@
 load.annfile <- function(annfile)
 {
 	x.raw <- read.table(annfile, header = FALSE, as.is = TRUE, sep = '\t')
+	if (ncol(x.raw) == 8){
+		cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
+                cons.seed <- lapply(strsplit(x.raw[,6],','), as.integer)       
+                cons.neighbor_id <- lapply(strsplit(x.raw[,7],','), as.integer)
+                cons.tested_loci <- lapply(strsplit(x.raw[,8],','), as.integer)
+		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], x.raw[,4], x.raw[,5], cons.seed, cons.neighbor_id, cons.tested_loci), stringsAsFactors = FALSE)		
+		names(x) <- c('cons_seq', 'start', 'end', 'contig_count', 'contig_cvg', 'seed', 'neighbor_id', 'tested_loci')
+		x$start <- as.integer(x$start)
+		x$end <- as.integer(x$end)
+		x$contig_count <- as.numeric(x$contig_count)
+		x$contig_freq <- as.numeric(x$contig_freq)
+	}
+	
 	if (ncol(x.raw) == 6){
 		cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
 		cons.seed <- lapply(strsplit(x.raw[,4],','), as.integer)	
@@ -10,17 +23,18 @@ load.annfile <- function(annfile)
 		names(x) <- c('cons_seq', 'start', 'end', 'seed', 'neighbor_id', 'tested_loci')
 		x$start <- as.integer(x$start)
 		x$end <- as.integer(x$end)
-		return(x)
-	}else{
-		if (ncol(x.raw) == 3){
-			cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
-			x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3]), stringsAsFactors = FALSE)
-			names(x) <- c('cons_seq', 'start', 'end')
-			x$start <- as.integer(x$start)
-			x$end <- as.integer(x$end)
-		}
-		return(x)
 	}
+	if (ncol(x.raw) == 3){
+		cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
+		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3]), stringsAsFactors = FALSE)
+		names(x) <- c('cons_seq', 'start', 'end')
+		x$start <- as.integer(x$start)
+		x$end <- as.integer(x$end)
+	}
+	return(x)
+	
+	
+	
 	
 }
 
