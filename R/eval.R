@@ -1,4 +1,28 @@
-eval.ann <- function(ann.data, true.encode, is.fdr = FALSE)
+eval.ann <- function(ann.data, true.encode)
+{
+	g.start <- 0
+	g.end <- floor(max(unlist(true.encode))/4 + 1)
+	m5.2 <- list(tStart = g.start, tEnd = g.end)
+	
+	var.data <- list(locus = sort(unique( floor(unlist(true.encode)/4) )))
+        acc <- rep(0,nrow(ann.data))
+        group.id <- rep(NaN,nrow(ann.data))
+        for (i in 1:nrow(ann.data)) {
+                if (i %% 100 == 0)
+                        print(i)
+                for (j in 1:length(true.encode)){
+                	m5.1 <- list(tStart = ann.data$start[i], tEnd = ann.data$end[i])
+			cur.acc <- 1 - dist_hamming(ann.data$cons_seq[[i]], m5.1, true.encode[[j]], m5.2, var.data)$dist
+			if (cur.acc > acc[i]){
+                                group.id[i] <- j
+                                acc[i] <- cur.acc
+                        }	
+		}
+        }
+        list(acc = acc, group.id = group.id)
+}
+
+eval.ann.legacy <- function(ann.data, true.encode, is.fdr = FALSE)
 {
 	acc <- rep(0,nrow(ann.data))
 	group.id <- rep(NaN,nrow(ann.data))
