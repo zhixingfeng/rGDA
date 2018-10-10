@@ -11,7 +11,7 @@ load.annfile <- function(annfile)
 		x$start <- as.integer(x$start)
 		x$end <- as.integer(x$end)
 		x$contig_count <- as.numeric(x$contig_count)
-		x$contig_freq <- as.numeric(x$contig_freq)
+		x$contig_cvg <- as.numeric(x$contig_cvg)
 	}
 	
 	if (ncol(x.raw) == 6){
