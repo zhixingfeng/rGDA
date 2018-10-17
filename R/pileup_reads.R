@@ -85,6 +85,8 @@ pileup_var <- function(encode.data, max.encode)
 {
 	var.count <- lapply(1:(max.encode+1), function(x) integer(0))
 	for (i in 1:length(encode.data)){
+		if (i %% 1000 == 0 )
+			print(i)
 		if (length(encode.data[[i]]) == 0)
 			next
 		for (j in 1:length(encode.data[[i]])){
