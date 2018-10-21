@@ -1,4 +1,42 @@
 library(seqinr)
+pileup_var_count_recode_pairwise <- function(recode.data, recode.ref.data, var.data)
+{
+	max.recode <- max(4*var.data$locus+3+1)
+	pu_var <- pileup_var(recode.data, max.recode)
+	pu_var_ref <- pileup_var(recode.ref.data, max.recode)		
+	
+	cor.table.count <- matrix(list(), nrow(var.data), nrow(var.data))
+	cor.table.cvg <- matrix(NaN, nrow(var.data), nrow(var.data))
+	cor.table.prop <- matrix(list(), nrow(var.data), nrow(var.data))
+	
+	for (i in 1:(nrow(var.data)-1)){
+		print(i)
+		for (j in (i+1):nrow(var.data)){
+			# get # of reads 
+			r_i <- c(pu_var[[4*var.data$locus[i]]], pu_var[[4*var.data$locus[i]+1]], pu_var[[4*var.data$locus[i]+2]], pu_var[[4*var.data$locus[i]+3]])
+			r_i <- c(r_i, pu_var_ref[[4*var.data$locus[i]]], pu_var_ref[[4*var.data$locus[i]+1]], pu_var_ref[[4*var.data$locus[i]+2]], pu_var_ref[[4*var.data$locus[i]+3]])
+			
+			r_j <- c(pu_var[[4*var.data$locus[j]]], pu_var[[4*var.data$locus[j]+1]], pu_var[[4*var.data$locus[j]+2]], pu_var[[4*var.data$locus[j]+3]])
+			r_j <- c(r_j, pu_var_ref[[4*var.data$locus[j]]], pu_var_ref[[4*var.data$locus[j]+1]], pu_var_ref[[4*var.data$locus[j]+2]], pu_var_ref[[4*var.data$locus[j]+3]])
+			
+			cur.cvg <- length(intersect(r_i, r_j))
+			# get co-mutation
+			comut <- matrix(NaN, 4, 4)
+			for (s in 0:3){
+				for (t in 0:3){
+					comut[s+1,t+1] <- length(intersect(pu_var[[4*var.data$locus[i]+s]], pu_var[[4*var.data$locus[j]+t]]))
+				}
+			}
+			cor.table.count[i,j] <- list(comut)
+			cor.table.cvg[i,j] <- cur.cvg
+			cor.table.prop[i,j] <- list(comut / cur.cvg)
+		}
+	}
+	list(cor.table.count=cor.table.count, cor.table.cvg=cor.table.cvg, cor.table.prop = cor.table.prop)
+	
+}
+
+
 
 pileup_var_count_recode <- function(recode.data, recode.ref.data, var.data)
 {
@@ -90,7 +128,7 @@ pileup_var <- function(encode.data, max.encode)
 		if (length(encode.data[[i]]) == 0)
 			next
 		for (j in 1:length(encode.data[[i]])){
-			var.count[[encode.data[[i]][j] + 1]] <- c(var.count[[encode.data[[i]][j] + 1]], i - 1)
+			var.count[[encode.data[[i]][j]]] <- c(var.count[[encode.data[[i]][j]]], i - 1)
 		}
 	}
 	var.count

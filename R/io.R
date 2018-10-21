@@ -6,7 +6,13 @@ load.annfile <- function(annfile)
                 cons.seed <- lapply(strsplit(x.raw[,6],','), as.integer)       
                 cons.neighbor_id <- lapply(strsplit(x.raw[,7],','), as.integer)
                 cons.tested_loci <- lapply(strsplit(x.raw[,8],','), as.integer)
-		cons.nn_reads_id <- lapply(strsplit(x.raw[,9],','), as.integer)
+		
+		if (all(!is.na(x.raw[,9]))){
+			cons.nn_reads_id <- lapply(strsplit(x.raw[,9],','), as.integer)
+		}else{
+			cons.nn_reads_id <- x.raw[,9]
+		}
+		
 		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], x.raw[,4], x.raw[,5], cons.seed, cons.neighbor_id, cons.tested_loci, cons.nn_reads_id), stringsAsFactors = FALSE)		
 		names(x) <- c('cons_seq', 'start', 'end', 'contig_count', 'contig_cvg', 'seed', 'neighbor_id', 'tested_loci', 'nn_reads_id')
 		x$start <- as.integer(x$start)
