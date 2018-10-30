@@ -1,7 +1,7 @@
 ann_to_graph <- function(ann.data, min.prop = 0.5, min.len.prop = 0.5)
 {
 	gp <- make_empty_graph(nrow(ann.data))
-	gp <- set_vertex_attr(gp, 'name', value = 1:nrow(ann.data))
+	gp <- set_vertex_attr(gp, 'name', value = as.character(1:nrow(ann.data)))
 	for (i in 1:nrow(ann.data)){
 		if (i %% 100 == 0)
 			print(i)
