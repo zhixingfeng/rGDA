@@ -2,10 +2,10 @@ load.annfile <- function(annfile)
 {
 	x.raw <- read.table(annfile, header = FALSE, as.is = TRUE, sep = '\t')
 	if (ncol(x.raw) == 10){
-		cons.seq <- lapply(strsplit(x.raw[,1],','), as.integer)
-                cons.seed <- lapply(strsplit(x.raw[,8],','), as.integer)       
-                cons.neighbor_id <- lapply(strsplit(x.raw[,9],','), as.integer)
-                cons.tested_loci <- lapply(strsplit(x.raw[,10],','), as.integer)
+		cons.seq <- lapply(strsplit(as.character(x.raw[,1]),','), as.integer)
+                cons.seed <- lapply(strsplit(as.character(x.raw[,8]),','), as.integer)       
+                cons.neighbor_id <- lapply(strsplit(as.character(x.raw[,9]),','), as.integer)
+                cons.tested_loci <- lapply(strsplit(as.character(x.raw[,10]),','), as.integer)
 		
 		#if (all(!is.na(x.raw[,11]))){
 		#	cons.nn_reads_id <- lapply(strsplit(x.raw[,11],','), as.integer)
