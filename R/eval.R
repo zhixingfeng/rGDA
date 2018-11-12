@@ -1,3 +1,10 @@
+split.ann.by.group <- function(rl.eval, true.encode)
+{
+	lapply(1:length(true.encode), function(x, y)  which(sapply(y, function(t,k) any(t==k), k = x)), y = rl.eval$group.id)
+}
+
+
+
 eval.ann.legacy <- function(ann.data, true.encode)
 {
 	g.start <- 0
