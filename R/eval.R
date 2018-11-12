@@ -60,6 +60,7 @@ eval.ann.heatmap <- function(ann.data, true.encode, var.data, pdf.file = "")
 		#heatmap.2(heatmap.data[1:10,1:100], Rowv = FALSE, Colv = FALSE, dendrogram = "none", scale = 'none', col = c('black', 'white', 'green', 'red', 'orange', 'blue'), trace = 'none')
 		image(t(heatmap.data), col = c('black', 'white', 'green', 'red', 'orange', 'blue'))
 	dev.off()
+	list(rl.eval = rl.eval, ann.id.gp = ann.id.gp, all.loci = all.loci, ann.merged = ann.merged)
 }
 
 
