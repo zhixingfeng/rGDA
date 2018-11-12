@@ -1,3 +1,17 @@
+pair_jaccard <- function(x)
+{
+	sim_jac <- matrix(0, length(x), length(x))
+	for (i in 1:length(x)){
+		for (j in 1:length(x)){
+			if (j == i) next
+			n.common <- length(intersect(x[[i]], x[[j]]))
+			n.union <- length(union(x[[i]], x[[j]]))
+			sim_jac[i,j] <- n.common / n.union
+		}
+	}
+	sim_jac
+}
+
 sim_jaccard <- function(encode.1, m5.1, encode.2, m5.2)
 {
 	overlap.start <- max(m5.1$tStart, m5.2$tStart)
