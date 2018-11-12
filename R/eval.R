@@ -4,6 +4,64 @@ split.ann.by.group <- function(rl.eval, true.encode)
 }
 
 
+eval.ann.heatmap <- function(ann.data, true.encode, var.data, pdf.file = "")
+{
+	rl.eval <- eval.ann(ann.data, true.encode)
+	ann.id.gp <- split.ann.by.group(rl.eval, true.encode)
+
+	all.loci <- sort(unique(c(floor(unlist(true.encode)/4), var.data$locus)))
+
+	# merge all contigs corresponding to each true contig
+	ann.merged <- list()
+	for (i in 1:length(ann.id.gp)){
+		ann.merged[[i]] <- list()
+
+		ann.merged[[i]]$tested.loci <- integer(0)
+		ann.merged[[i]]$cons.seq <- integer(0)
+		ann.merged[[i]]$start <- -1
+		ann.merged[[i]]$end <- -1
+		
+		if (length(ann.id.gp[[i]]) == 0)
+			next
+
+		ann.merged[[i]]$tested.loci <- sort(unique(unlist(ann.data$tested_loci[ann.id.gp[[i]]])))
+		ann.merged[[i]]$cons.seq <- sort(unique(unlist(ann.data$cons_seq[ann.id.gp[[i]]])))	
+	}
+	
+	if (length(ann.merged) != length(true.encode))
+		stop('length(ann.merged) != length(true.encode)')
+	
+	if (pdf.file == ""){
+		return(list(rl.eval = rl.eval, ann.id.gp = ann.id.gp, all.loci = all.loci, ann.merged = ann.merged))
+	}
+
+	# draw heatmap
+	heatmap.data <- matrix(-1, nrow = 2*length(true.encode), ncol = length(all.loci))
+	for (i in 1:length(ann.merged)){
+		cur.locus.true.loci <- match(floor(true.encode[[i]] / 4), all.loci)
+		cur.locus.contig.loci <- match(floor(ann.merged[[i]]$cons.seq / 4), all.loci)
+		cur.locus.contig.tested_loci <- match(ann.merged[[i]]$tested.loci, all.loci)
+	
+		cur.locus.true.base <- true.encode[[i]] %% 4
+		cur.locus.contig.base <- ann.merged[[i]]$cons.seq %% 4
+
+		if (any(is.na(c(cur.locus.true.loci, cur.locus.contig.loci))))		
+			stop('any(is.na(c(cur.locus.true, cur.locus.contig)))')
+
+		t <- 2*(i-1)
+		heatmap.data[t+1, ] <- 0 
+		heatmap.data[t+1, cur.locus.true.loci] <- cur.locus.true.base + 1
+		
+		heatmap.data[t+2, cur.locus.contig.tested_loci] <- 0
+		heatmap.data[t+2, cur.locus.contig.loci] <- cur.locus.contig.base + 1
+	}
+
+	pdf(pdf.file)
+		#heatmap.2(heatmap.data[1:10,1:100], Rowv = FALSE, Colv = FALSE, dendrogram = "none", scale = 'none', col = c('black', 'white', 'green', 'red', 'orange', 'blue'), trace = 'none')
+		image(t(heatmap.data), col = c('black', 'white', 'green', 'red', 'orange', 'blue'))
+	dev.off()
+}
+
 
 eval.ann.legacy <- function(ann.data, true.encode)
 {
