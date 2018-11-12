@@ -1,4 +1,4 @@
-eval.ann <- function(ann.data, true.encode)
+eval.ann.legacy <- function(ann.data, true.encode)
 {
 	g.start <- 0
 	g.end <- floor(max(unlist(true.encode))/4 + 1)
@@ -22,10 +22,11 @@ eval.ann <- function(ann.data, true.encode)
         list(acc = acc, group.id = group.id)
 }
 
-eval.ann.legacy <- function(ann.data, true.encode, is.fdr = FALSE)
+eval.ann <- function(ann.data, true.encode, is.fdr = FALSE)
 {
-	acc <- rep(0,nrow(ann.data))
-	group.id <- rep(NaN,nrow(ann.data))
+	acc <- rep(-1,nrow(ann.data))
+	#group.id <- rep(NaN,nrow(ann.data))
+	group.id <- lapply(1:nrow(ann.data), function(x) integer(0))
 	for (i in 1:nrow(ann.data)) {
 		if (i %% 100 == 0)
 			print(i)
@@ -37,14 +38,20 @@ eval.ann.legacy <- function(ann.data, true.encode, is.fdr = FALSE)
 			}else{
 				cur.acc <- length(intersect(ann.data$cons_seq[[i]], cur.true.encode)) / length(union(ann.data$cons_seq[[i]], cur.true.encode))
 			}
-			if (cur.acc > acc[i]){
-				group.id[i] <- j
+			if (cur.acc >= acc[i]){
+				#group.id[i] <- j
+				if (cur.acc > acc[i]){
+					group.id[[i]] <- j
+				}else{
+					group.id[[i]] <- c(group.id[[i]], j) 
+				}
 				acc[i] <- cur.acc
 			}
 		}
 	}
 	list(acc = acc, group.id = group.id)
 }
+
 load.snp.code <- function(snp.mat.file)
 {
 	load(snp.mat.file)
