@@ -36,7 +36,8 @@ eval.ann.heatmap <- function(ann.data, true.encode, var.data, pdf.file = "")
 	}
 
 	# draw heatmap
-	heatmap.data <- matrix(-1, nrow = 2*length(true.encode), ncol = length(all.loci))
+	heatmap.data <- matrix(-2, nrow = 3*length(true.encode), ncol = length(all.loci))
+	rownames(heatmap.data) <- rep("", 3*length(true.encode))
 	for (i in 1:length(ann.merged)){
 		cur.locus.true.loci <- match(floor(true.encode[[i]] / 4), all.loci)
 		cur.locus.contig.loci <- match(floor(ann.merged[[i]]$cons.seq / 4), all.loci)
@@ -49,17 +50,22 @@ eval.ann.heatmap <- function(ann.data, true.encode, var.data, pdf.file = "")
 			stop('any(is.na(c(cur.locus.true, cur.locus.contig)))')
 
 		t <- 2*(i-1)
-		heatmap.data[t+1, ] <- 0 
+		heatmap.data[t+1, ] <- 0
 		heatmap.data[t+1, cur.locus.true.loci] <- cur.locus.true.base + 1
 		
+		heatmap.data[t+2, ] <- -1
 		heatmap.data[t+2, cur.locus.contig.tested_loci] <- 0
 		heatmap.data[t+2, cur.locus.contig.loci] <- cur.locus.contig.base + 1
+		
+		rownames(heatmap.data)[t+1] <- paste('True contig ',i, sep='')
+		rownames(heatmap.data)[t+2] <- paste('Reconstructed contig ',i, sep='')
 	}
 
-	pdf(pdf.file)
+	pdf(pdf.file, height = 0.15*nrow(heatmap.data))
 		#heatmap.2(heatmap.data[1:10,1:100], Rowv = FALSE, Colv = FALSE, dendrogram = "none", scale = 'none', col = c('black', 'white', 'green', 'red', 'orange', 'blue'), trace = 'none')
 		#image(t(heatmap.data), col = c('black', 'white', 'green', 'red', 'orange', 'blue'))
-		heatmap(heatmap.data, Rowv = NA, Colv = NA, scale="none", col = c('black', 'white', 'green', 'red', 'orange', 'blue'))
+		#heatmap(heatmap.data, Rowv = NA, Colv = NA, scale="none", col = c('black', 'white', 'green', 'red', 'orange', 'blue'))
+		pheatmap(heatmap.data, cluster_rows = FALSE, cluster_cols=FALSE, color = c('white','black', 'grey', 'green', 'red', 'orange', 'blue'))
 	dev.off()
 	list(rl.eval = rl.eval, ann.id.gp = ann.id.gp, all.loci = all.loci, ann.merged = ann.merged)
 }
