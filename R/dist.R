@@ -28,6 +28,21 @@ sim_jaccard <- function(encode.1, m5.1, encode.2, m5.2)
 
 }
 
+sim_jaccard_pairwise <- function(cur.encode.data, cur.m5.data)
+{
+	if (length(cur.encode.data) != nrow(cur.m5.data))
+		stop('length(cur.encode.data) != nrow(cur.m5.data)')
+	
+	dist.mat <- matrix(NaN, length(cur.encode.data), length(cur.encode.data))
+	for (i in 1:length(cur.encode.data)){
+		for (j in 1:length(cur.m5.data)){	
+			dist.mat[i,j] <- sim_jaccard(cur.encode.data[[i]], m5.data[i,], cur.encode.data[[j]], m5.data[j,])	
+		}
+	}
+	dist.mat
+}
+
+
 dist_hamming <- function(encode.1, m5.1, encode.2, m5.2, var.data)
 {
 	overlap.start <- max(m5.1$tStart, m5.2$tStart)
