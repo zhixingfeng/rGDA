@@ -35,7 +35,8 @@ sim_jaccard_pairwise <- function(cur.encode.data, cur.m5.data)
 	
 	dist.mat <- matrix(NaN, length(cur.encode.data), length(cur.encode.data))
 	for (i in 1:length(cur.encode.data)){
-		for (j in 1:length(cur.m5.data)){	
+		for (j in 1:length(cur.encode.data)){
+			if (i == j) next	
 			dist.mat[i,j] <- sim_jaccard(cur.encode.data[[i]], m5.data[i,], cur.encode.data[[j]], m5.data[j,])	
 		}
 	}
