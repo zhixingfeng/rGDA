@@ -1,20 +1,25 @@
 load.annfile <- function(annfile)
 {
 	x.raw <- read.table(annfile, header = FALSE, as.is = TRUE, sep = '\t')
-	if (ncol(x.raw) == 10){
+	if (ncol(x.raw) == 10 || ncol(x.raw) == 11){
 		cons.seq <- lapply(strsplit(as.character(x.raw[,1]),','), as.integer)
                 cons.seed <- lapply(strsplit(as.character(x.raw[,8]),','), as.integer)       
                 cons.neighbor_id <- lapply(strsplit(as.character(x.raw[,9]),','), as.integer)
                 cons.tested_loci <- lapply(strsplit(as.character(x.raw[,10]),','), as.integer)
 		
-		#if (all(!is.na(x.raw[,11]))){
-		#	cons.nn_reads_id <- lapply(strsplit(x.raw[,11],','), as.integer)
-		#}else{
-		#	cons.nn_reads_id <- x.raw[,9]
-		#}
-		
-		x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], x.raw[,4], x.raw[,5], x.raw[,6], x.raw[,7],cons.seed, cons.neighbor_id, cons.tested_loci), stringsAsFactors = FALSE)		
-		names(x) <- c('cons_seq', 'start', 'end', 'contig_count', 'contig_cvg', 'log_bf_null', 'log_bf_ind', 'seed', 'neighbor_id', 'tested_loci')
+		if (ncol(x.raw) == 11){
+			cons.nn_reads_id <- lapply(strsplit(x.raw[,11],','), function(y) if (y[1]==-1) {integer(0)} else {as.integer(y)})
+			x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], x.raw[,4], x.raw[,5], x.raw[,6], x.raw[,7],
+                                cons.seed, cons.neighbor_id, cons.tested_loci, cons.nn_reads_id), stringsAsFactors = FALSE)
+			names(x) <- c('cons_seq', 'start', 'end', 'contig_count', 'contig_cvg', 'log_bf_null', 'log_bf_ind', 
+                                 'seed', 'neighbor_id', 'tested_loci', 'nn_reads_id')
+		}else{
+			x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], x.raw[,4], x.raw[,5], x.raw[,6], x.raw[,7],
+				cons.seed, cons.neighbor_id, cons.tested_loci), stringsAsFactors = FALSE)		
+			names(x) <- c('cons_seq', 'start', 'end', 'contig_count', 'contig_cvg', 'log_bf_null', 'log_bf_ind',
+				 'seed', 'neighbor_id', 'tested_loci')
+		}
+
 		x$start <- as.integer(x$start)
 		x$end <- as.integer(x$end)
 		x$contig_count <- as.numeric(x$contig_count)
