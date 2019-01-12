@@ -8,6 +8,7 @@ load.annfile <- function(annfile)
                 cons.tested_loci <- lapply(strsplit(as.character(x.raw[,10]),','), as.integer)
 		
 		if (ncol(x.raw) == 11){
+			x.raw[,11] <- as.character(x.raw[,11])
 			cons.nn_reads_id <- lapply(strsplit(x.raw[,11],','), function(y) if (y[1]==-1) {integer(0)} else {as.integer(y)})
 			x <- data.frame(cbind(cons.seq, x.raw[,2], x.raw[,3], x.raw[,4], x.raw[,5], x.raw[,6], x.raw[,7],
                                 cons.seed, cons.neighbor_id, cons.tested_loci, cons.nn_reads_id), stringsAsFactors = FALSE)
