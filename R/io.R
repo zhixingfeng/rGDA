@@ -151,6 +151,17 @@ load.varfile <- function(var.file)
 	var.data
 }
 
+load.dforestfile <- function(dforest.file)
+{
+	dat.raw <- read.table(dforest.file, header=FALSE, sep = '\t', as.is=TRUE)
+	linked.code <- lapply(strsplit(dat.raw[,7], ','), as.integer)
+	dat <- data.frame(dat.raw[,1:6], stringsAsFactors = FALSE)
+	dat$linked.code <- linked.code
+	names(dat) <- c('code', 'bf', 'condprob', 'n_xy', 'n_y', 'n_linked_loci', 'linked_code')
+	dat
+}
+
+
 
 
 

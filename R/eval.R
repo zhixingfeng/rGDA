@@ -71,7 +71,7 @@ eval.ann.heatmap <- function(ann.data, true.encode, var.data, pdf.file = "")
 }
 
 
-eval.ann.legacy <- function(ann.data, true.encode)
+eval.ann.hamming <- function(ann.data, true.encode, is.var = FALSE)
 {
 	g.start <- 0
 	g.end <- floor(max(unlist(true.encode))/4 + 1)
@@ -85,7 +85,7 @@ eval.ann.legacy <- function(ann.data, true.encode)
                         print(i)
                 for (j in 1:length(true.encode)){
                 	m5.1 <- list(tStart = ann.data$start[i], tEnd = ann.data$end[i])
-			cur.acc <- 1 - dist_hamming(ann.data$cons_seq[[i]], m5.1, true.encode[[j]], m5.2, var.data)$dist
+			cur.acc <- 1 - dist_hamming(ann.data$cons_seq[[i]], m5.1, true.encode[[j]], m5.2, var.data, is.var)$dist
 			if (cur.acc > acc[i]){
                                 group.id[i] <- j
                                 acc[i] <- cur.acc

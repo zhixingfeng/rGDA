@@ -44,7 +44,7 @@ sim_jaccard_pairwise <- function(cur.encode.data, cur.m5.data)
 }
 
 
-dist_hamming <- function(encode.1, m5.1, encode.2, m5.2, var.data)
+dist_hamming <- function(encode.1, m5.1, encode.2, m5.2, var.data, is.var = FALSE)
 {
 	overlap.start <- max(m5.1$tStart, m5.2$tStart)
 	overlap.end <- min(m5.1$tEnd, m5.2$tEnd)
@@ -52,7 +52,11 @@ dist_hamming <- function(encode.1, m5.1, encode.2, m5.2, var.data)
 	encode.2.overlap <- encode.2[encode.2 >= 4*overlap.start & encode.2 <= 4*overlap.end+3]
 	
 	n.diff <- length(setdiff(encode.1.overlap, encode.2.overlap)) + length(setdiff(encode.2.overlap, encode.1.overlap))
-	n.var <- sum(var.data$locus >= overlap.start & var.data$locus <= overlap.end)
+	if (is.var){
+		n.var <- sum(var.data$locus >= overlap.start & var.data$locus <= overlap.end)
+	}else{
+		n.var <- overlap.end - overlap.start + 1
+	}
 
 	if (n.var > 0){
 		list(dist = n.diff/n.var, n.diff = n.diff, n.var = n.var)
