@@ -1,3 +1,14 @@
+eval.detection <- function(detected.code, true.code, exclude.loci = integer())
+{
+	exclude.code <- c(4*exclude.loci, 4*exclude.loci+1, 4*exclude.loci+2, 4*exclude.loci+3)
+
+	detected.code.ft <- setdiff(detected.code, exclude.code)
+	true.code.ft <- setdiff(true.code, exclude.code)
+
+	n.common <- length(intersect(detected.code.ft, true.code.ft))
+	
+}
+
 split.ann.by.group <- function(rl.eval, true.encode)
 {
 	lapply(1:length(true.encode), function(x, y)  which(sapply(y, function(t,k) any(t==k), k = x)), y = rl.eval$group.id)

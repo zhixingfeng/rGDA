@@ -12,32 +12,46 @@ pair_jaccard <- function(x)
 	sim_jac
 }
 
-sim_jaccard <- function(encode.1, m5.1, encode.2, m5.2)
+sim_jaccard <- function(encode.1, m5.1, encode.2, m5.2, check.ref = FALSE, min.overlap = 500)
 {
 	overlap.start <- max(m5.1$tStart, m5.2$tStart)
         overlap.end <- min(m5.1$tEnd, m5.2$tEnd)
-        encode.1.overlap <- encode.1[encode.1 >= 4*overlap.start & encode.1 <= 4*overlap.end+3]
+        
+	if (overlap.end - overlap.start + 1 < min.overlap){
+		return(-1)
+	}
+	
+	encode.1.overlap <- encode.1[encode.1 >= 4*overlap.start & encode.1 <= 4*overlap.end+3]
         encode.2.overlap <- encode.2[encode.2 >= 4*overlap.start & encode.2 <= 4*overlap.end+3]
 
 	n.union <- length(union(encode.1.overlap, encode.2.overlap))
 	n.intersect <- length(intersect(encode.1.overlap, encode.2.overlap))
 	
-	if (n.union == 0 | 2*n.intersect < length(encode.1.overlap) | 2*n.intersect < length(encode.2.overlap) )
-		return(-1)
+	
+	if (check.ref){
+		if ( n.union == 0 | 2*n.intersect < length(encode.1.overlap) )
+			return(-1)
+	}
+	#if (n.union == 0 | 2*n.intersect < length(encode.1.overlap) | 2*n.intersect < length(encode.2.overlap) )
+	#	return(-1)
 	n.intersect / n.union	
 
 }
 
-sim_jaccard_pairwise <- function(cur.encode.data, cur.m5.data)
+sim_jaccard_pairwise <- function(cur.encode.data, cur.m5.data, check.ref = FALSE, min.overlap.rate = 0.75)
 {
 	if (length(cur.encode.data) != nrow(cur.m5.data))
 		stop('length(cur.encode.data) != nrow(cur.m5.data)')
 	
 	dist.mat <- matrix(NaN, length(cur.encode.data), length(cur.encode.data))
 	for (i in 1:length(cur.encode.data)){
+		if (i %% 100 == 0){
+			print (i)
+		}
 		for (j in 1:length(cur.encode.data)){
-			if (i == j) next	
-			dist.mat[i,j] <- sim_jaccard(cur.encode.data[[i]], m5.data[i,], cur.encode.data[[j]], m5.data[j,])	
+			if (i == j) next
+			cur.min.overlap <- floor(min.overlap.rate*(cur.m5.data$tEnd[i] - cur.m5.data$tStart[i] + 1))
+			dist.mat[i,j] <- sim_jaccard(cur.encode.data[[i]], cur.m5.data[i,], cur.encode.data[[j]], cur.m5.data[j,], check.ref, cur.min.overlap)	
 		}
 	}
 	dist.mat
