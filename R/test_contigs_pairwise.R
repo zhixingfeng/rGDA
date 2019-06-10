@@ -1,4 +1,32 @@
-test_contig_pair <- function(ann.data, recode.data, recode.ref.data, i , j)
+test_contig_pair <- function(ann.data, recode.data, recode.ref.data, i, j)
+{
+	if (ann.data$start[i] > ann.data$end[j] | ann.data$end[i] < ann.data$start[j])
+                return(NULL)
+
+	overlap.start <- max(ann.data$start[i], ann.data$start[j])
+        overlap.end <- min(ann.data$end[i], ann.data$end[j])
+        overlap.len <- overlap.end - overlap.start + 1
+
+        cons_seq_i <- ann.data$cons_seq[[i]][ ann.data$cons_seq[[i]] >= 4*overlap.start & ann.data$cons_seq[[i]] <= 4*overlap.end+3 ]
+        cons_seq_j <- ann.data$cons_seq[[j]][ ann.data$cons_seq[[j]] >= 4*overlap.start & ann.data$cons_seq[[j]] <= 4*overlap.end+3 ]
+
+	
+
+        fp <- setdiff(cons_seq_i, cons_seq_j)
+        fn <- setdiff(cons_seq_j, cons_seq_i)
+        diff_var <- c(fp, fn)
+	
+	if (length(diff_var) >= 5) return(NULL)
+	
+	nr.id <- union(ann.data$nn_reads_id[[i]], ann.data$nn_reads_id[[j]]) + 1
+
+	cur.max.code <- max( max(unlist(recode.data[nr.id])), max(unlist(recode.ref.data[nr.id])) )
+	cur.pu.var <- pileup_var(recode.data[nr.id], cur.max.code)
+	cur.pu.var.ref <- pileup_var(recode.ref.data[nr.id], cur.max.code)
+}
+
+
+test_contig_pair_legacy <- function(ann.data, recode.data, recode.ref.data, i , j)
 {
 	if (ann.data$start[i] > ann.data$end[j] | ann.data$end[i] < ann.data$start[j])
 		return(NULL)

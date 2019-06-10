@@ -22,5 +22,46 @@ binom_log_bf_bayes <- function(x, n, a_0 = 1.332824, b_0 = 89.04769)
 	log_bf
 }
 
+test_contig <- function(cons.seq, pu.var, pu.var.ref)
+{
+	if (length(cons.seq)<2){
+		return(NULL)
+	}
+	cons.loci <- floor(cons.seq / 4)
+	
+	pu.cvg <- list()
+	for (locus in cons.loci){
+		pu.cvg[[locus]] <- integer()
+		for (k in 0:3){
+			pu.cvg[[locus]] <- union(pu.cvg[[locus]], pu.var[[4*locus+k]])
+			pu.cvg[[locus]] <- union(pu.cvg[[locus]], pu.var.ref[[4*locus+k]])
+		}
+	}
+
+	joint.var <- pu.var[[cons.seq[1]]]
+	joint.cvg <- pu.cvg[[cons.loci[1]]]
+
+	for (i in 2:length(cons.seq))
+		joint.var <- intersect(joint.var, pu.var[[cons.seq[i]]])
+	
+	for (i in 2:length(cons.loci))
+		joint.cvg <- intersect(joint.cvg, pu.cvg[[cons.loci[i]]])
+
+	prob.obs <- length(joint.var) / length(joint.cvg)
+
+	pu.var.count <- sapply(pu.var[cons.seq], length)
+	pu.cvg.count <- sapply(pu.cvg[cons.loci], length)	
+	
+	prob.exp <- prod(pu.var.count / pu.cvg.count)
+
+	log.bf <- binom.bf(length(joint.var), length(joint.cvg), prob.exp)	
+	rr <- prob.obs / prob.exp
+		
+	list(pu.var.count=pu.var.count, pu.cvg.count=pu.cvg.count, joint.var.count=length(joint.var), joint.cvg.count=length(joint.cvg),
+		prob.obs = prob.obs, prob.exp = prob.exp, log.bf = log.bf, rr = rr)
+}
+
+
+
 
 
