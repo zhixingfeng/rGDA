@@ -92,6 +92,21 @@ load.m5file <- function(m5file)
 	x
 }
 
+load.m5qvfile <- function(m5qvfile)
+{
+	x.raw <- read.table(m5qvfile, header=FALSE, as.is=TRUE)
+	
+	qv <- lapply(strsplit(x.raw[,20],','), as.integer)
+	qv_locus <- lapply(strsplit(x.raw[,21],','), as.integer)
+	
+	x <- data.frame(cbind(x.raw[,1], x.raw[,2], x.raw[,3], x.raw[,4], x.raw[,5], x.raw[,6], x.raw[,7], x.raw[,8],
+			x.raw[,9], x.raw[,10], x.raw[,11], x.raw[,12], x.raw[,13], x.raw[,14], x.raw[,15], x.raw[,16],
+			x.raw[,17], x.raw[,18], x.raw[,19], qv, qv_locus), stringsAsFactors = FALSE)
+	names(x) <-  c('qName', 'qLength', 'qStart', 'qEnd', 'qStrand', 'tName', 'tLength', 'tStart', 'tEnd', 'tStrand', 'score',
+			 'numMatch', 'numMismatch', 'numIns', 'numDel', 'mapQV', 'qAlignedSeq', 'matchPattern', 'tAlignedSeq', 'qv', 'qv_locus')
+	x
+}
+
 save.m5file <- function(m5.data, out.file)
 {
 	m5.data$tEnd <- m5.data$tEnd + 1
