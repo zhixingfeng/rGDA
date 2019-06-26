@@ -59,6 +59,8 @@ get_consensus <- function(encode.data.gp, m5.data.gp, rm.del = TRUE)
 	list(cons.seq = cons.seq, var.count = var.count, read.count = read.count, prop = var.count / read.count)
 }
 
+
+
 get_consensus_recode <- function(cur.recode.data, cur.recode.ref.data, min.cvg = 10)
 {
 	cur.var.data <- list()
@@ -66,9 +68,29 @@ get_consensus_recode <- function(cur.recode.data, cur.recode.ref.data, min.cvg =
 	
 	pu <- pileup_var_count_recode(cur.recode.data, cur.recode.ref.data, cur.var.data)
 	
-	cur.shift <- apply(pu, 1, function(x, t)  if (x[10]>t & sum(x[2:5]>0.5)){4*x[1] + which(x[2:5]>0.5) - 1 } , t = min.cvg)
+	cur.shift <- apply(pu, 1, function(x, t)  if (x[10]>t & any(x[2:5]>=0.80)){4*x[1] + which(x[2:5]>=0.80) - 1 } , t = min.cvg)
 
 	sort(unlist(cur.shift))
+}
+
+get_consensus_recode_recap <- function(ann.data, recode.data, recode.ref.data, min.cvg = 10)
+{
+	all_loci <- sort(unique( floor(unlist(c(recode.data, recode.ref.data)) / 4) ))
+	cons.recap <- ann.data
+	cons_seq <- list()
+	tested_loci <- list()
+	for (i in 1:nrow(ann.data)){
+		cur.recode.data <- recode.data[ann.data$neighbor_id[[i]] + 1]
+		cur.recode.ref.data <- recode.ref.data[ann.data$neighbor_id[[i]] + 1]
+		cur.cons <- get_consensus_recode(cur.recode.data, cur.recode.ref.data, min.cvg)
+		cur.loci <- floor(cur.cons / 4)
+		
+		cons_seq[[i]] <- cur.cons[cur.loci >= ann.data$start[i] & cur.loci <= ann.data$end[i]]
+		tested_loci[[i]] <- all_loci[all_loci >= ann.data$start[i] & all_loci <= ann.data$end[i]]
+	}
+	cons.recap$cons_seq <- cons_seq
+	cons.recap$tested_loci <- tested_loci	
+	cons.recap
 }
 
 get_consensus_recode_legacy <- function(encode.data.gp, m5.data.gp, min.read.count = 5)
@@ -103,10 +125,9 @@ get_cons_bymovie <- function(encode.data, m5.data, min.read.count = 5)
 
         cons.list <- list()
         for (i in 1:length(encode.data.movie))
-                cons.list[[i]] <- get_consensus_recode(encode.data.movie[[i]], m5.data.movie[[i]], min.read.count)
+                cons.list[[i]] <- get_consensus_recode_legacy(encode.data.movie[[i]], m5.data.movie[[i]], min.read.count)
         cons.list
 }
-
 
 
 

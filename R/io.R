@@ -1,3 +1,14 @@
+save.annfile <- function(ann.data, outfile)
+{
+	ann.data.out <- ann.data
+	ann.data.out$cons_seq <- sapply(ann.data$cons_seq, paste, collapse=',')
+	ann.data.out$seed <- sapply(ann.data$seed, paste, collapse=',')
+	ann.data.out$neighbor_id <- sapply(ann.data$neighbor_id, paste, collapse=',')
+	ann.data.out$tested_loci <- sapply(ann.data$tested_loci, paste, collapse=',')
+	ann.data.out$nn_reads_id <- sapply(ann.data$nn_reads_id, paste, collapse=',')
+	write.table(ann.data.out, file = outfile, col.names=FALSE, row.names=FALSE, quote=FALSE, sep = '\t')
+}
+
 load.annfile <- function(annfile)
 {
 	x.raw <- read.table(annfile, header = FALSE, as.is = TRUE, sep = '\t')
