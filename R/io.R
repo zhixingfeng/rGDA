@@ -1,3 +1,23 @@
+load.pu.qv.file <- function(pu.qv.file)
+{
+	x.raw <- read.table(pu.qv.file, sep = '\t', as.is = TRUE)
+	
+	qv <- lapply(strsplit(x.raw[,4], ','), function(y) if(all(y==-1)){integer()}else{as.integer(y)})
+	read_id <- lapply(strsplit(x.raw[,5], ','), function(y) if(all(y==-1)){integer()}else{as.integer(y)})
+	
+	x <- data.frame(cbind(x.raw[,1], x.raw[,2], x.raw[,3], qv, read_id), stringsAsFactors = FALSE)
+	names(x) <- c('code', 'locus', 'base', 'qv', 'read_id')
+	x
+}
+
+load.pu.qvc.file <- function(pu.qvc.file)
+{
+	x <- read.table(pu.qvc.file, sep = '\t', as.is = TRUE)	
+	names(x) <- c('code', 'locus', 'base', 'ref', 'total_qv', 'n_base', 'mean_qv', 'effective_depth')
+	x
+}
+
+
 save.annfile <- function(ann.data, outfile)
 {
 	ann.data.out <- ann.data
