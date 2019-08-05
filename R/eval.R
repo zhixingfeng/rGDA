@@ -106,7 +106,7 @@ eval.ann.hamming <- function(ann.data, true.encode, is.var = FALSE)
         list(acc = acc, group.id = group.id)
 }
 
-eval.ann <- function(ann.data, true.encode, is.fdr = FALSE)
+eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 {
 	acc <- rep(-1,nrow(ann.data))
 	#group.id <- rep(NaN,nrow(ann.data))
@@ -115,8 +115,12 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE)
 		if (i %% 100 == 0)
 			print(i)
 		for (j in 1:length(true.encode)){
-			cur.true.encode <- intersect(true.encode[[j]], c(4*ann.data$tested_loci[[i]], 4*ann.data$tested_loci[[i]]+1, 4*ann.data$tested_loci[[i]]+2, 4*ann.data$tested_loci[[i]]+3))
-
+			if (is.trim){
+				cur.true.encode <- intersect(true.encode[[j]], 
+				c(4*ann.data$tested_loci[[i]], 4*ann.data$tested_loci[[i]]+1, 4*ann.data$tested_loci[[i]]+2, 4*ann.data$tested_loci[[i]]+3))
+			}else{
+				cur.true.encode <- true.encode[[j]]
+			}
 			if (is.fdr){
 				cur.acc <- length(intersect(ann.data$cons_seq[[i]], cur.true.encode)) / length(ann.data$cons_seq[[i]])
 			}else{
