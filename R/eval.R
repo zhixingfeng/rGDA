@@ -109,8 +109,10 @@ eval.ann.hamming <- function(ann.data, true.encode, is.var = FALSE)
 eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 {
 	acc <- rep(-1,nrow(ann.data))
-	#group.id <- rep(NaN,nrow(ann.data))
 	group.id <- lapply(1:nrow(ann.data), function(x) integer(0))
+	true.encode.trim <- list()
+	fp <- list()
+	fn <- list()
 	for (i in 1:nrow(ann.data)) {
 		if (i %% 100 == 0)
 			print(i)
@@ -119,7 +121,7 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 				cur.true.encode <- intersect(true.encode[[j]], 
 				c(4*ann.data$tested_loci[[i]], 4*ann.data$tested_loci[[i]]+1, 4*ann.data$tested_loci[[i]]+2, 4*ann.data$tested_loci[[i]]+3))
 			}else{
-				cur.true.encode <- true.encode[[j]]
+				cur.true.encode <- true.encode[[j]][floor(true.encode[[j]]/4)>=ann.data$start[i] & floor(true.encode[[j]]/4) <= ann.data$end[i]]
 			}
 			if (is.fdr){
 				cur.acc <- length(intersect(ann.data$cons_seq[[i]], cur.true.encode)) / length(ann.data$cons_seq[[i]])
@@ -130,6 +132,9 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 				#group.id[i] <- j
 				if (cur.acc > acc[i]){
 					group.id[[i]] <- j
+					true.encode.trim[[i]] <- cur.true.encode
+					fp[[i]] <- setdiff(ann.data$cons_seq[[i]], cur.true.encode)
+					fn[[i]] <- setdiff(cur.true.encode, ann.data$cons_seq[[i]])
 				}else{
 					group.id[[i]] <- c(group.id[[i]], j) 
 				}
@@ -137,7 +142,7 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 			}
 		}
 	}
-	list(acc = acc, group.id = group.id)
+	list(acc = acc, group.id = group.id, true.encode.trim = true.encode.trim, fp = fp, fn = fn)
 }
 
 load.snp.code <- function(snp.mat.file)
