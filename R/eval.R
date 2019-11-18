@@ -127,6 +127,8 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 				cur.acc <- length(intersect(ann.data$cons_seq[[i]], cur.true.encode)) / length(ann.data$cons_seq[[i]])
 			}else{
 				cur.acc <- length(intersect(ann.data$cons_seq[[i]], cur.true.encode)) / length(union(ann.data$cons_seq[[i]], cur.true.encode))
+				if (length(ann.data$cons_seq[[i]]) == 0 & length(cur.true.encode) == 0)
+				cur.acc <- 1
 			}
 			if (cur.acc >= acc[i]){
 				#group.id[i] <- j
@@ -143,6 +145,27 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 		}
 	}
 	list(acc = acc, group.id = group.id, true.encode.trim = true.encode.trim, fp = fp, fn = fn)
+}
+
+# unfinished
+eval.ann.coverage <- function(cur.ann.data, ann.eval, true.encode)
+{
+	true.encode.detected <- list()
+	for (i in 1:length(true.encode)){
+		true.encode.detected[[i]] <- numeric()
+	}
+	
+	if (length(ann.eval$group.id) == 0) next
+	for (i in 1:length(ann.eval$group.id)){
+		cur_gp_id <- ann.eval$group.id[[i]]
+	
+		if (length(cur_gp_id)==0) next
+		for (j in 1:length(cur_gp_id)){
+			true.encode.detected[[cur_gp_id[j]]] <- union(true.encode.detected[[cur_gp_id[j]]], cur.ann.data$cons_seq[[i]])
+		}
+	}
+	
+	
 }
 
 load.snp.code <- function(snp.mat.file)
