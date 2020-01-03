@@ -1,3 +1,33 @@
+test_contig_pairwise <- function(ann.data, recode.data, recode.ref.data, pu.var, pu.var.ref, i, j)
+{
+	if (ann.data$start[i] > ann.data$end[j] | ann.data$end[i] < ann.data$start[j])
+                return(NULL)
+
+        overlap.start <- max(ann.data$start[i], ann.data$start[j])
+        overlap.end <- min(ann.data$end[i], ann.data$end[j])
+        overlap.len <- overlap.end - overlap.start + 1
+
+        cons_seq_i <- ann.data$cons_seq[[i]][ ann.data$cons_seq[[i]] >= 4*overlap.start & ann.data$cons_seq[[i]] <= 4*overlap.end+3 ]
+        cons_seq_j <- ann.data$cons_seq[[j]][ ann.data$cons_seq[[j]] >= 4*overlap.start & ann.data$cons_seq[[j]] <= 4*overlap.end+3 ]
+
+        fp <- setdiff(cons_seq_i, cons_seq_j)
+        fn <- setdiff(cons_seq_j, cons_seq_i)
+        diff_var <- c(fp, fn)
+
+	common_var <- intersect(cons_seq_i, cons_seq_j)
+
+        if (length(diff_var) >= 5 | 5*ann.data$contig_cvg[i] > ann.data$contig_cvg[j] |
+		( length(common_var) < floor(0.5*length(cons_seq_i)) &
+		length(common_var) < floor(0.5*length(cons_seq_j)) ) ){ 
+		#return(length(common_var))
+		return(-1)
+	}
+	
+        nr.id <- union(ann.data$nn_reads_id[[i]], ann.data$nn_reads_id[[j]]) + 1
+
+	length(common_var)
+}
+
 test_contig_pair <- function(ann.data, recode.data, recode.ref.data, i, j)
 {
 	if (ann.data$start[i] > ann.data$end[j] | ann.data$end[i] < ann.data$start[j])
