@@ -1,7 +1,7 @@
 test_contig_pairwise <- function(ann.data, recode.data, recode.ref.data, pu.var, pu.var.ref, i, j)
 {
 	if (ann.data$start[i] > ann.data$end[j] | ann.data$end[i] < ann.data$start[j])
-                return(NULL)
+                return(-1)
 
         overlap.start <- max(ann.data$start[i], ann.data$start[j])
         overlap.end <- min(ann.data$end[i], ann.data$end[j])
@@ -19,7 +19,6 @@ test_contig_pairwise <- function(ann.data, recode.data, recode.ref.data, pu.var,
         if (length(diff_var) >= 5 | 5*ann.data$contig_cvg[i] > ann.data$contig_cvg[j] |
 		( length(common_var) < floor(0.5*length(cons_seq_i)) &
 		length(common_var) < floor(0.5*length(cons_seq_j)) ) ){ 
-		#return(length(common_var))
 		return(-1)
 	}
 	
