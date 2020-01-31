@@ -89,16 +89,21 @@ eval.ann.hamming <- function(ann.data, true.encode, is.var = FALSE)
 	m5.2 <- list(tStart = g.start, tEnd = g.end)
 	
 	var.data <- list(locus = sort(unique( floor(unlist(true.encode)/4) )))
-        acc <- rep(0,nrow(ann.data))
-        group.id <- rep(NaN,nrow(ann.data))
+        acc <- rep(-1, nrow(ann.data))
+	group.id <- lapply(1:nrow(ann.data), function(x) integer(0))
+        #group.id <- rep(NaN,nrow(ann.data))
         for (i in 1:nrow(ann.data)) {
                 if (i %% 100 == 0)
                         print(i)
                 for (j in 1:length(true.encode)){
                 	m5.1 <- list(tStart = ann.data$start[i], tEnd = ann.data$end[i])
 			cur.acc <- 1 - dist_hamming(ann.data$cons_seq[[i]], m5.1, true.encode[[j]], m5.2, var.data, is.var)$dist
-			if (cur.acc > acc[i]){
-                                group.id[i] <- j
+			if (cur.acc >= acc[i]){
+				if (cur.acc > acc[i]){
+                                	group.id[[i]] <- j
+				}else{
+					group.id[[i]] <- c(group.id[[i]], j)
+				}
                                 acc[i] <- cur.acc
                         }	
 		}
@@ -142,6 +147,9 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 				}
 				acc[i] <- cur.acc
 			}
+		}
+		if (acc[i] < 0.5){
+			group.id[[i]] <- 0
 		}
 	}
 	list(acc = acc, group.id = group.id, true.encode.trim = true.encode.trim, fp = fp, fn = fn)
