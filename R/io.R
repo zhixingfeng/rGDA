@@ -1,3 +1,9 @@
+load.upath <- function(upath.file)
+{
+	x.raw <- readLines(upath.file)
+	lapply(strsplit(x.raw, " "), as.integer)
+}
+
 load.pu.qv.file <- function(pu.qv.file)
 {
 	x.raw <- read.table(pu.qv.file, sep = '\t', as.is = TRUE)
