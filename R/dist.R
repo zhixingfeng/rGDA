@@ -12,7 +12,7 @@ pair_jaccard <- function(x)
 	sim_jac
 }
 
-sim_jaccard <- function(encode.1, m5.1, encode.2, m5.2, check.ref = FALSE, min.overlap = 500)
+sim_jaccard <- function(encode.1, m5.1, encode.2, m5.2, check.ref = FALSE, min.overlap = 500, is.asym = FALSE)
 {
 	overlap.start <- max(m5.1$tStart, m5.2$tStart)
         overlap.end <- min(m5.1$tEnd, m5.2$tEnd)
@@ -24,12 +24,17 @@ sim_jaccard <- function(encode.1, m5.1, encode.2, m5.2, check.ref = FALSE, min.o
 	encode.1.overlap <- encode.1[encode.1 >= 4*overlap.start & encode.1 <= 4*overlap.end+3]
         encode.2.overlap <- encode.2[encode.2 >= 4*overlap.start & encode.2 <= 4*overlap.end+3]
 
-	n.union <- length(union(encode.1.overlap, encode.2.overlap))
+	if (is.asym){
+		n.union <- length(union(encode.1, encode.2.overlap))
+	}else{
+		n.union <- length(union(encode.1.overlap, encode.2.overlap))
+	}
 	n.intersect <- length(intersect(encode.1.overlap, encode.2.overlap))
 	
 	
 	if (check.ref){
-		if ( n.union == 0 | 2*n.intersect < length(encode.1.overlap) )
+		#if ( n.union == 0 | 2*n.intersect < length(encode.1.overlap) )
+		if(n.union == 0 | 2*n.intersect < length(encode.1))
 			return(-1)
 	}
 	#if (n.union == 0 | 2*n.intersect < length(encode.1.overlap) | 2*n.intersect < length(encode.2.overlap) )

@@ -38,8 +38,10 @@ pileup_var_count_recode_pairwise <- function(recode.data, recode.ref.data, var.d
 
 
 
-pileup_var_count_recode <- function(recode.data, recode.ref.data, var.data)
+pileup_var_count_recode <- function(recode.data, recode.ref.data, var.data.raw)
 {
+	var.data <- list()
+	var.data$locus <- sort(unique(var.data.raw$locus))
 	pu_var <- rep(0, 4*max(var.data$locus)+3)
 	pu_var_ref <- rep(0, 4*max(var.data$locus)+3)
 	

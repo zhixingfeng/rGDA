@@ -61,16 +61,18 @@ get_consensus <- function(encode.data.gp, m5.data.gp, rm.del = TRUE)
 
 
 
-get_consensus_recode <- function(cur.recode.data, cur.recode.ref.data, min.cvg = 10)
+get_consensus_recode <- function(cur.recode.data, cur.recode.ref.data, min.cvg = 10, min.prob = 0.6)
 {
 	cur.var.data <- list()
 	cur.var.data$locus <- sort(unique( floor(unlist(c(cur.recode.data, cur.recode.ref.data)) / 4) ))
 	
 	pu <- pileup_var_count_recode(cur.recode.data, cur.recode.ref.data, cur.var.data)
 	
-	cur.shift <- apply(pu, 1, function(x, t)  if (x[10]>t & any(x[2:5]>=0.80)){4*x[1] + which(x[2:5]>=0.80) - 1 } , t = min.cvg)
+	cur.shift <- apply(pu, 1, function(x, t)  if (x[10]>t & any(x[2:5]>=min.prob)){4*x[1] + which(x[2:5]>=min.prob) - 1 } , t = min.cvg)
 
-	sort(unlist(cur.shift))
+	rl <- sort(unlist(cur.shift))
+	names(rl) <- NULL
+	rl
 }
 
 get_consensus_recode_recap <- function(ann.data, recode.data, recode.ref.data, min.cvg = 10)

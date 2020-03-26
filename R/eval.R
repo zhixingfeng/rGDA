@@ -133,7 +133,7 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 			}else{
 				cur.acc <- length(intersect(ann.data$cons_seq[[i]], cur.true.encode)) / length(union(ann.data$cons_seq[[i]], cur.true.encode))
 				if (length(ann.data$cons_seq[[i]]) == 0 & length(cur.true.encode) == 0)
-				cur.acc <- 1
+					cur.acc <- 0
 			}
 			if (cur.acc >= acc[i]){
 				#group.id[i] <- j
@@ -148,9 +148,9 @@ eval.ann <- function(ann.data, true.encode, is.fdr = FALSE, is.trim = TRUE)
 				acc[i] <- cur.acc
 			}
 		}
-		if (acc[i] < 0.5){
-			group.id[[i]] <- 0
-		}
+		#if (acc[i] < 0.5){
+		#	group.id[[i]] <- 0
+		#}
 	}
 	list(acc = acc, group.id = group.id, true.encode.trim = true.encode.trim, fp = fp, fn = fn)
 }
