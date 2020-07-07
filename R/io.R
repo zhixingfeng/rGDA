@@ -24,14 +24,25 @@ load.pu.qvc.file <- function(pu.qvc.file)
 }
 
 
-save.annfile <- function(ann.data, outfile)
+save.annfile <- function(ann.data, outfile, rm.empty = FALSE)
 {
 	ann.data.out <- ann.data
-	ann.data.out$cons_seq <- sapply(ann.data$cons_seq, paste, collapse=',')
-	ann.data.out$seed <- sapply(ann.data$seed, paste, collapse=',')
-	ann.data.out$neighbor_id <- sapply(ann.data$neighbor_id, paste, collapse=',')
-	ann.data.out$tested_loci <- sapply(ann.data$tested_loci, paste, collapse=',')
-	ann.data.out$nn_reads_id <- sapply(ann.data$nn_reads_id, paste, collapse=',')
+	#ann.data.out$cons_seq <- sapply(ann.data$cons_seq, paste, collapse=',')
+	#ann.data.out$seed <- sapply(ann.data$seed, paste, collapse=',')
+	#ann.data.out$neighbor_id <- sapply(ann.data$neighbor_id, paste, collapse=',')
+	#ann.data.out$tested_loci <- sapply(ann.data$tested_loci, paste, collapse=',')
+	#ann.data.out$nn_reads_id <- sapply(ann.data$nn_reads_id, paste, collapse=',')
+
+	ann.data.out$cons_seq <- sapply(ann.data$cons_seq, function(x) if (length(x) > 0){paste(x, collapse=',')}else{"-1"})
+	ann.data.out$seed <- sapply(ann.data$seed, function(x) if (length(x) > 0){paste(x, collapse=',')}else{"-1"})
+	ann.data.out$neighbor_id <- sapply(ann.data$neighbor_id, function(x) if (length(x) > 0){paste(x, collapse=',')}else{"-1"})
+        ann.data.out$tested_loci <- sapply(ann.data$tested_loci, function(x) if (length(x) > 0){paste(x, collapse=',')}else{"-1"})
+        ann.data.out$nn_reads_id <- sapply(ann.data$nn_reads_id, function(x) if (length(x) > 0){paste(x, collapse=',')}else{"-1"})
+
+
+	if (rm.empty){
+		ann.data.out <- ann.data.out[ann.data.out$cons_seq != "-1",]
+	}
 	write.table(ann.data.out, file = outfile, col.names=FALSE, row.names=FALSE, quote=FALSE, sep = '\t')
 }
 
