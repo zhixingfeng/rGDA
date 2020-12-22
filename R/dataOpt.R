@@ -19,3 +19,8 @@ calLinkDist <- function(dforest)
 	rl
 }
 
+# get union of intervals
+interval_union <- function(x)
+{
+}
+
